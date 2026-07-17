@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareRoute Admin Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1A365D;--teal:#0D9488;--gold:#D4A843;--red:#DC2626;--green:#059669;
+  --bg:#F1F5F9;--card:#FFFFFF;--text:#1E293B;--sub:#64748B;--border:#E2E8F0;
+  --sidebar-w:230px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);display:flex;min-height:100vh;color:var(--text)}
+.sidebar{
+  width:var(--sidebar-w);background:var(--navy);color:#fff;min-height:100vh;
+  position:fixed;left:0;top:0;bottom:0;padding:24px 0;display:flex;flex-direction:column;
+}
+.sidebar-logo{padding:0 20px;margin-bottom:32px;}
+.sidebar-logo .title{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.sidebar-nav{flex:1}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:12px 20px;margin:2px 10px;
+  border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:rgba(255,255,255,.65);
+  transition:.15s;border:none;background:none;width:calc(100% - 20px);text-align:left;font-family:inherit;
+}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:var(--teal);color:#fff}
+.nav-item .icon{font-size:18px;width:24px;text-align:center}
+.sidebar-user{
+  margin:12px 20px;padding:12px;background:rgba(255,255,255,.08);border-radius:10px;
+  display:flex;align-items:center;gap:10px;
+}
+.sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.sidebar-user .name{font-size:13px;font-weight:600}
+.sidebar-user .role{font-size:10px;color:rgba(255,255,255,.5)}
+
+.main{margin-left:var(--sidebar-w);flex:1;padding:24px 28px;max-width:calc(100vw - var(--sidebar-w))}
+.page-header{margin-bottom:24px}
+.page-header h1{font-size:24px;font-weight:800}
+.page-header p{font-size:13px;color:var(--sub);margin-top:4px}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{
+  background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);
+  border:1px solid var(--border);
+}
+.kpi-card .label{font-size:12px;color:var(--sub);font-weight:500;margin-bottom:6px}
+.kpi-card .value{font-size:28px;font-weight:800}
+.kpi-card .change{font-size:12px;margin-top:4px}
+.change-up{color:var(--green)}.change-down{color:var(--red)}
+
+/* Card */
+.card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);border:1px solid var(--border);margin-bottom:20px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title .badge{font-size:11px;padding:2px 8px;border-radius:20px;background:#E8F4F0;color:var(--teal);font-weight:600}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border)}
+td{padding:12px;font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap}
+tr:hover td{background:#F8FAFC}
+
+/* Status badges */
+.status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.status-confirmed{background:#EFF6FF;color:#2563EB}
+.status-completed{background:#F0FDF4;color:var(--green)}
+.status-pending{background:#FFFBEB;color:#D97706}
+.status-cancelled{background:#FEF2F2;color:var(--red)}
+
+/* Buttons */
+.btn{
+  padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;transition:.15s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--teal);color:#fff}.btn-primary:hover{background:#0B8277}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-danger{background:transparent;border:1.5px solid var(--red);color:var(--red)}.btn-danger:hover{background:#FEF2F2}
+
+/* Filters */
+.filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-input{
+  padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;
+  font-family:inherit;color:var(--text);background:var(--card);
+}
+.filter-input:focus{outline:none;border-color:var(--teal)}
+select.filter-input{cursor:pointer}
+
+/* Chart grid */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);
+  display:flex;align-items:center;justify-content:center;z-index:100;
+}
+.modal{
+  background:var(--card);border-radius:16px;padding:24px;max-width:600px;width:90%;
+  max-height:80vh;overflow-y:auto;
+}
+.modal h2{font-size:18px;font-weight:800;margin-bottom:16px}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:var(--sub)}
+
+.tab-row{display:flex;gap:0;margin-bottom:16px}
+.tab-btn{
+  padding:8px 16px;border:none;background:none;font-size:13px;font-weight:600;color:var(--sub);
+  cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;
+}
+.tab-btn.active{color:var(--teal);border-bottom-color:var(--teal)}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="title">CareRoute</div>
+    <div class="sub">Admin Dashboard v1.0</div>
+  </div>
+  <div class="sidebar-nav">
+    <button class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+      <span class="icon">📊</span> Dashboard
+    </button>
+    <button class="nav-item" data-page="orders" onclick="switchPage('orders')">
+      <span class="icon">📋</span> Orders
+    </button>
+    <button class="nav-item" data-page="providers" onclick="switchPage('providers')">
+      <span class="icon">🏥</span> Providers
+    </button>
+    <button class="nav-item" data-page="settlements" onclick="switchPage('settlements')">
+      <span class="icon">💰</span> Settlements
+    </button>
+    <button class="nav-item" data-page="reviews" onclick="switchPage('reviews')">
+      <span class="icon">⭐</span> Reviews
+    </button>
+  </div>
+  <div class="sidebar-user">
+    <div class="avatar">CR</div>
+    <div>
+      <div class="name">Admin User</div>
+      <div class="role">Super Admin</div>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="main-content"></div>
+
+<script>
+// ============ DATA ============
+const mockOrders = [
+  {id:'CR-20260715-001',customer:'John Smith',nationality:'USA',package:'Health Checkup L2 Premium',provider:'PUMCH',total:32600,channel:'cits',status:'completed',date:'2026-07-15',stage:'N/A',addons:0},
+  {id:'CR-20260716-002',customer:'Maria Garcia',nationality:'ESP',package:'Dental L3 VIP',provider:'Shanghai 9th',total:128000,channel:'cits',status:'in_progress',date:'2026-07-16',stage:'2/3',addons:1},
+  {id:'CR-20260717-003',customer:'Takeshi Yamamoto',nationality:'JPN',package:'Health Checkup L1 Essential',provider:'Huashan',total:8500,channel:'referral',status:'completed',date:'2026-07-17',stage:'N/A',addons:2},
+  {id:'CR-20260717-004',customer:'Anna Petrova',nationality:'RUS',package:'Health Checkup L3 VIP',provider:'PUMCH',total:56000,channel:'direct',status:'confirmed',date:'2026-07-20',stage:'N/A',addons:0},
+  {id:'CR-20260718-005',customer:'Ahmed Al-Rashid',nationality:'UAE',package:'Dental L2 Premium',provider:'Shanghai 9th',total:42000,channel:'cits',status:'confirmed',date:'2026-07-22',stage:'0/3',addons:0},
+  {id:'CR-20260718-006',customer:'Sophie Dubois',nationality:'FRA',package:'Health Checkup L2 Premium',provider:'Huashan',total:28000,channel:'cits',status:'cancelled',date:'2026-07-18',stage:'N/A',addons:0},
+];
+
+const mockProviders = [
+  {id:'P-001',name:'Peking Union Medical College Hospital (PUMCH)',nameEn:'Peking Union Medical College Hospital',type:'physical_exam',ownership:'public',city:'Beijing',services:42,orders:156,status:'active',contractExp:'2027-06-30',apiKey:'crt_pumch_a1b2c3d4...'},
+  {id:'P-002',name:'Huashan Hospital, Fudan University',nameEn:'Huashan Hospital',type:'physical_exam',ownership:'public',city:'Shanghai',services:38,orders:89,status:'active',contractExp:'2027-08-15',apiKey:'crt_huashan_e5f6g7h8...'},
+  {id:'P-003',name:'Shanghai Ninth People\'s Hospital',nameEn:'Shanghai 9th Hospital',type:'dental',ownership:'public',city:'Shanghai',services:55,orders:201,status:'active',contractExp:'2027-04-01',apiKey:'crt_sh9th_i9j0k1l2...'},
+];
+
+const mockSettlements = [
+  {id:'SET-202607-001',provider:'PUMCH',period:'2026-07',totalSettlement:245000,totalPremium:98000,netPayable:245000,status:'paid',invoiceNo:'FP-202607-001',paidAt:'2026-07-15'},
+  {id:'SET-202607-002',provider:'Huashan',period:'2026-07',totalSettlement:156000,totalPremium:62400,netPayable:156000,status:'confirmed',invoiceNo:'',paidAt:null},
+  {id:'SET-202607-003',provider:'Shanghai 9th',period:'2026-07',totalSettlement:412000,totalPremium:164800,netPayable:412000,status:'draft',invoiceNo:'',paidAt:null},
+];
+
+const mockReviews = [
+  {id:'R-001',customer:'John Smith',package:'Health Checkup L2',overall:5,staff:5,english:4,wait:5,report:5,comment:'Excellent experience. The English coordinator was very helpful.',date:'2026-07-22',public:true},
+  {id:'R-002',customer:'Maria Garcia',package:'Dental L3',overall:4,staff:5,english:4,wait:3,report:4,comment:'Great treatment but had to wait 45min past my appointment.',date:'2026-07-23',public:true},
+  {id:'R-003',customer:'Takeshi Yamamoto',package:'Health Checkup L1',overall:5,staff:5,english:3,wait:5,report:5,comment:'Very thorough checkup. English communication could be better.',date:'2026-07-24',public:true},
+  {id:'R-004',customer:'Anna Petrova',package:'Health Checkup L3',overall:5,staff:5,english:5,wait:4,report:5,comment:'World-class service. The VIP treatment is worth every yuan.',date:'2026-07-18',public:true},
+];
+
+// ============ PAGE SWITCH ============
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+function switchPage(page){
+  document.querySelectorAll('.nav-item').forEach(b=>{
+    b.classList.toggle('active',b.dataset.page===page);
+  });
+  renderPage(page);
+}
+
+function renderPage(page){
+  const main = document.getElementById('main-content');
+  switch(page){
+    case 'dashboard': main.innerHTML = renderDashboard(); initCharts(); break;
+    case 'orders': main.innerHTML = renderOrders(); break;
+    case 'providers': main.innerHTML = renderProviders(); break;
+    case 'settlements': main.innerHTML = renderSettlements(); break;
+    case 'reviews': main.innerHTML = renderReviews(); break;
+  }
+}
+
+// ============ DASHBOARD ============
+function renderDashboard(){
+  const totalRevenue = mockOrders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
+  const completed = mockOrders.filter(o=>o.status==='completed').length;
+  const inProgress = mockOrders.filter(o=>o.status==='in_progress'||o.status==='confirmed').length;
+  return `
+    <div class="page-header"><h1>Dashboard</h1><p>Overview of operations for July 2026</p></div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="label">Total Revenue (MTD)</div>
+        <div class="value">¥${(totalRevenue/10000).toFixed(1)}<span style="font-size:14px;color:var(--sub)">万</span></div>
+        <div class="change change-up">+12.5% vs last month</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">Total Orders</div>
+        <div class="value">${mockOrders.length}</div>
+        <div class="change change-up">+3 new this week</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">Completed</div>
+        <div class="value">${completed}</div>
+        <div class="change" style="color:var(--teal)">${inProgress} in progress</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">Avg. Rating</div>
+        <div class="value">4.7</div>
+        <div class="change change-up">from ${mockReviews.length} reviews</div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">Revenue by Channel</div>
+        <canvas id="chartChannel" height="200"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">Orders by Status</div>
+        <canvas id="chartStatus" height="200"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Orders <span class="badge">Last 6</span></div>
+      <div class="table-wrap">${renderOrderTable(mockOrders)}</div>
+    </div>
+  `;
+}
+
+function initCharts(){
+  const ctx1 = document.getElementById('chartChannel');
+  if(ctx1) new Chart(ctx1,{
+    type:'doughnut',
+    data:{
+      labels:['CITS','Direct','Referral'],
+      datasets:[{data:[4,1,1],backgroundColor:['#0D9488','#1A365D','#D4A843'],borderWidth:0}]
+    },
+    options:{plugins:{legend:{position:'bottom',labels:{padding:16,font:{size:12}}}}}
+  });
+
+  const ctx2 = document.getElementById('chartStatus');
+  if(ctx2) new Chart(ctx2,{
+    type:'bar',
+    data:{
+      labels:['Completed','In Progress','Confirmed','Cancelled'],
+      datasets:[{data:[3,1,1,1],backgroundColor:['#059669','#D97706','#2563EB','#DC2626'],borderRadius:6}]
+    },
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+// ============ ORDERS ============
+function renderOrders(){
+  return `
+    <div class="page-header">
+      <h1>Orders</h1>
+      <p>Manage customer orders across all providers</p>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <select class="filter-input" onchange="filterOrders()" id="filterStatus">
+          <option value="all">All Statuses</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select class="filter-input" onchange="filterOrders()" id="filterChannel">
+          <option value="all">All Channels</option>
+          <option value="cits">CITS</option>
+          <option value="direct">Direct</option>
+          <option value="referral">Referral</option>
+        </select>
+        <input class="filter-input" placeholder="Search customer or order no..." oninput="filterOrders()" id="filterSearch" style="flex:1;min-width:200px">
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('filterStatus').value='all';document.getElementById('filterChannel').value='all';document.getElementById('filterSearch').value='';filterOrders()">Reset</button>
+      </div>
+      <div class="table-wrap" id="orderTable">${renderOrderTable(mockOrders)}</div>
+    </div>
+  `;
+}
+
+function renderOrderTable(orders){
+  return `<table>
+    <thead><tr>
+      <th>Order No</th><th>Customer</th><th>Package</th><th>Provider</th><th>Total</th><th>Channel</th><th>Status</th><th>Date</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${orders.map(o=>`
+      <tr>
+        <td style="font-weight:600;color:var(--navy)">${o.id}</td>
+        <td>${o.customer}<br><span style="font-size:10px;color:var(--sub)">${o.nationality}</span></td>
+        <td>${o.package}<br><span style="font-size:10px;color:var(--sub)">${o.stage!=='N/A'?'Stage '+o.stage:''} ${o.addons>0?'+'+o.addons+' addons':''}</span></td>
+        <td>${o.provider}</td>
+        <td style="font-weight:600">¥${o.total.toLocaleString()}</td>
+        <td>${o.channel.toUpperCase()}</td>
+        <td><span class="status status-${o.status==='in_progress'?'pending':o.status}">${o.status.replace('_',' ')}</span></td>
+        <td style="font-size:12px">${o.date}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="showOrderDetail('${o.id}')">View</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function filterOrders(){
+  const st = document.getElementById('filterStatus').value;
+  const ch = document.getElementById('filterChannel').value;
+  const q = document.getElementById('filterSearch').value.toLowerCase();
+  const filtered = mockOrders.filter(o=>{
+    if(st!=='all' && o.status!==st) return false;
+    if(ch!=='all' && o.channel!==ch) return false;
+    if(q && !o.id.toLowerCase().includes(q) && !o.customer.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  document.getElementById('orderTable').innerHTML = renderOrderTable(filtered);
+}
+
+function showOrderDetail(id){
+  const o = mockOrders.find(x=>x.id===id);
+  if(!o) return;
+  const overlay = document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.onclick=function(e){if(e.target===this)this.remove()};
+  overlay.innerHTML=`<div class="modal">
+    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+    <h2>Order: ${o.id}</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
+      <div><strong>Customer:</strong> ${o.customer} (${o.nationality})</div>
+      <div><strong>Package:</strong> ${o.package}</div>
+      <div><strong>Provider:</strong> ${o.provider}</div>
+      <div><strong>Total:</strong> ¥${o.total.toLocaleString()}</div>
+      <div><strong>Channel:</strong> ${o.channel.toUpperCase()}</div>
+      <div><strong>Status:</strong> <span class="status status-${o.status==='in_progress'?'pending':o.status}">${o.status.replace('_',' ')}</span></div>
+      <div><strong>Date:</strong> ${o.date}</div>
+      <div><strong>Add-ons:</strong> ${o.addons}</div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+// ============ PROVIDERS ============
+function renderProviders(){
+  return `
+    <div class="page-header">
+      <h1>Providers</h1>
+      <p>Manage hospital, clinic, and examination center partners</p>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <button class="btn btn-primary btn-sm">+ Add Provider</button>
+        <button class="btn btn-outline btn-sm">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Name</th><th>Type</th><th>Ownership</th><th>City</th><th>Services</th><th>Orders</th><th>Status</th><th>Contract Exp</th><th>Actions</th>
+          </tr></thead>
+          <tbody>${mockProviders.map(p=>`
+            <tr>
+              <td style="font-weight:600;color:var(--navy)">${p.id}</td>
+              <td>${p.nameEn}<br><span style="font-size:10px;color:var(--sub)">${p.name.slice(0,30)}...</span></td>
+              <td>${p.type.replace('_',' ')}</td>
+              <td>${p.ownership}</td>
+              <td>${p.city}</td>
+              <td style="text-align:center;font-weight:600">${p.services}</td>
+              <td style="text-align:center">${p.orders}</td>
+              <td><span class="status status-completed">${p.status}</span></td>
+              <td style="font-size:12px">${p.contractExp}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="showProviderDetail('${p.id}')">Manage</button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function showProviderDetail(id){
+  const p = mockProviders.find(x=>x.id===id);
+  if(!p) return;
+  const overlay = document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.onclick=function(e){if(e.target===this)this.remove()};
+  overlay.innerHTML=`<div class="modal">
+    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+    <h2>${p.nameEn}</h2>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:16px;">${p.name}</div>
+    <div class="tab-row">
+      <button class="tab-btn active">Info</button>
+      <button class="tab-btn">Services (${p.services})</button>
+      <button class="tab-btn">API Key</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
+      <div><strong>Type:</strong> ${p.type.replace('_',' ')}</div>
+      <div><strong>Ownership:</strong> ${p.ownership}</div>
+      <div><strong>City:</strong> ${p.city}</div>
+      <div><strong>Total Orders:</strong> ${p.orders}</div>
+      <div><strong>Contract Expiry:</strong> ${p.contractExp}</div>
+      <div><strong>Integration:</strong> Hybrid (API + HIS)</div>
+    </div>
+    <div style="margin-top:16px;background:#F8FAFC;padding:12px;border-radius:8px;font-family:monospace;font-size:12px;">
+      <div style="font-weight:600;margin-bottom:6px;">API Key:</div>
+      <div>${p.apiKey}</div>
+      <div style="margin-top:8px;"><button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red)">Regenerate Key</button></div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+// ============ SETTLEMENTS ============
+function renderSettlements(){
+  return `
+    <div class="page-header">
+      <h1>Settlements</h1>
+      <p>Monthly settlement reconciliation with providers</p>
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi-card"><div class="label">Total Payable This Month</div><div class="value">¥813K</div></div>
+      <div class="kpi-card"><div class="label">Pending Confirmation</div><div class="value">3</div></div>
+      <div class="kpi-card"><div class="label">Total Premium Earned</div><div class="value">¥325.2K</div></div>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <button class="btn btn-primary btn-sm" onclick="alert('Settlement generation triggered! Check console.')">Generate July Settlement</button>
+        <input type="month" class="filter-input" value="2026-07">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Settlement ID</th><th>Provider</th><th>Period</th><th>Total Settlement</th><th>Total Premium</th><th>Net Payable</th><th>Status</th><th>Invoice</th><th>Actions</th>
+          </tr></thead>
+          <tbody>${mockSettlements.map(s=>`
+            <tr>
+              <td style="font-weight:600;color:var(--navy)">${s.id}</td>
+              <td>${s.provider}</td>
+              <td>${s.period}</td>
+              <td style="font-weight:600">¥${s.totalSettlement.toLocaleString()}</td>
+              <td style="color:var(--teal)">¥${s.totalPremium.toLocaleString()}</td>
+              <td style="font-weight:600">¥${s.netPayable.toLocaleString()}</td>
+              <td><span class="status ${s.status==='paid'?'status-completed':s.status==='confirmed'?'status-pending':'status-cancelled'}">${s.status}</span></td>
+              <td style="font-size:12px">${s.invoiceNo||'Pending'}</td>
+              <td>
+                ${s.status==='draft'?'<button class="btn btn-outline btn-sm">Confirm</button>':''}
+                ${s.status==='confirmed'?'<button class="btn btn-primary btn-sm">Pay</button>':''}
+                ${s.status==='paid'?'<button class="btn btn-outline btn-sm">View</button>':''}
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ============ REVIEWS ============
+function renderReviews(){
+  const avgOverall = (mockReviews.reduce((s,r)=>s+r.overall,0)/mockReviews.length).toFixed(1);
+  return `
+    <div class="page-header">
+      <h1>Reviews</h1>
+      <p>Customer feedback and ratings management</p>
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr)">
+      <div class="kpi-card"><div class="label">Average Overall Rating</div><div class="value">${avgOverall} ⭐</div><div class="change change-up">from ${mockReviews.length} reviews</div></div>
+      <div class="kpi-card"><div class="label">Reviews This Month</div><div class="value">${mockReviews.length}</div><div class="change change-up">100% positive (≥4 stars)</div></div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Customer</th><th>Package</th><th>Overall</th><th>Staff</th><th>English</th><th>Wait</th><th>Report</th><th>Comment</th><th>Public</th><th>Actions</th>
+          </tr></thead>
+          <tbody>${mockReviews.map(r=>`
+            <tr>
+              <td>${r.id}</td><td>${r.customer}</td><td>${r.package}</td>
+              <td>${'★'.repeat(r.overall)}${'☆'.repeat(5-r.overall)}</td>
+              <td>${r.staff}</td><td>${r.english}</td><td>${r.wait}</td><td>${r.report}</td>
+              <td style="max-width:200px;white-space:normal;font-size:12px;">${r.comment}</td>
+              <td>${r.public?'<span class="status status-completed">Public</span>':'<span class="status status-cancelled">Hidden</span>'}</td>
+              <td><button class="btn btn-outline btn-sm">${r.public?'Hide':'Show'}</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ============ INIT ============
+renderPage('dashboard');
+</script>
+</body>
+</html>
