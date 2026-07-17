@@ -217,13 +217,59 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   font-size:14px;font-family:inherit;background:var(--card);
 }
 .inline-input:focus{outline:none;border-color:var(--teal);}
+
+/* Screen transition */
+.screen.active{animation:fadeSlide .25s ease;}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* Mini-program capsule (你好中国 APP container) */
+.mp-capsule{
+  display:inline-flex;align-items:center;gap:7px;
+  border:1px solid rgba(255,255,255,.5);border-radius:20px;
+  padding:3px 10px;font-size:11px;letter-spacing:1px;
+}
+.mp-capsule i{display:inline-block;width:1px;height:12px;background:rgba(255,255,255,.4);}
+
+/* How it works */
+.how-steps{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:10px;}
+.how-step{text-align:center;position:relative;padding-top:6px;}
+.how-step .how-num{
+  width:20px;height:20px;border-radius:50%;background:var(--teal);color:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;
+}
+.how-step .how-icon{font-size:22px;}
+.how-step .how-label{font-size:10px;color:var(--sub);margin-top:3px;line-height:1.3;}
+
+/* Escrow flow */
+.escrow-flow{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#F0FDFA;border:1px solid #B2DFDB;border-radius:12px;
+  padding:12px 10px;margin:12px 0;
+}
+.escrow-step{flex:1;text-align:center;font-size:10px;color:var(--navy);line-height:1.4;}
+.escrow-step .escrow-dot{
+  width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;
+}
+.escrow-arrow{color:var(--teal);font-weight:800;}
+
+/* Add-on card */
+.addon-card{
+  border:2px solid var(--gold);background:#FFFBEB;border-radius:14px;
+  padding:16px;margin:12px 0;
+}
+.addon-actions{display:flex;gap:8px;margin-top:12px;}
+.addon-note{font-size:10px;color:var(--sub);margin-top:10px;line-height:1.5;}
+
+/* Escrow status rows */
+.escrow-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;}
 </style>
 </head>
 <body>
 
 <div class="phone" id="app">
   <!-- Status Bar -->
-  <div class="status-bar"><span>9:41</span><span>📶 🔋</span></div>
+  <div class="status-bar"><span>9:41</span><span class="mp-capsule">•••<i></i>⊙</span></div>
 
   <!-- Header -->
   <div class="header">
@@ -261,6 +307,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="trust-item"><div class="num">41K+</div><div class="label">Foreign patients<br>in 2025</div></div>
         <div class="trust-item"><div class="num">4.8</div><div class="label">Average rating<br>from 1,200+ reviews</div></div>
         <div class="trust-item"><div class="num">70%</div><div class="label">Avg. savings<br>vs. US prices</div></div>
+      </div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:800;color:var(--text);">How CareRoute Works</div>
+        <div class="how-steps">
+          <div class="how-step"><div class="how-num">1</div><div class="how-icon">📦</div><div class="how-label">Choose<br>Package</div></div>
+          <div class="how-step"><div class="how-num">2</div><div class="how-icon">✈️</div><div class="how-label">Book<br>Travel</div></div>
+          <div class="how-step"><div class="how-num">3</div><div class="how-icon">🔒</div><div class="how-label">Pre-Auth<br>Escrow</div></div>
+          <div class="how-step"><div class="how-num">4</div><div class="how-icon">✅</div><div class="how-label">Pay After<br>Service</div></div>
+        </div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,var(--navy),#1E4D7B);color:#fff;margin-top:0;">
+        <div style="font-size:14px;font-weight:700;">🛡️ UnionPay Escrow Protection</div>
+        <div style="font-size:11px;opacity:.85;margin-top:6px;line-height:1.8;">
+          100% VISA pre-authorization held in escrow.<br>
+          Released per service stage — only after your confirmation.<br>
+          Unconfirmed add-ons are never charged.
+        </div>
       </div>
       <div class="card" style="background:linear-gradient(135deg,#F0FDFA,#E8F4F0);">
         <div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:4px;">✨ Why CareRoute?</div>
@@ -314,7 +377,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div style="font-size:12px;color:var(--sub);">john.smith@email.com</div>
       </div>
       <div class="card" style="text-align:center;padding:20px;">
-        <div style="font-size:13px;color:var(--sub);">This is a design prototype (DAMO).</div>
+        <div style="font-size:13px;color:var(--sub);">This is a design prototype (DEMO).</div>
         <div style="font-size:13px;color:var(--sub);margin-top:4px;">Full functionality coming soon.</div>
       </div>
     </div>
@@ -458,9 +521,9 @@ const orders = [
     stages:[
       {label:'Package Selected',time:'Jul 15, 10:30',done:true},
       {label:'Flight & Hotel Booked',time:'Jul 15, 10:45',done:true},
-      {label:'Pre-Auth Confirmed',time:'Jul 15, 10:46',done:true,desc:'VISA ending ****8291, ¥39,120 frozen (120%)'},
+      {label:'Pre-Auth Confirmed',time:'Jul 15, 10:46',done:true,desc:'VISA ending ****8291, ¥32,600 frozen (100%)'},
       {label:'Checkup Completed',time:'Jul 22, 11:00',done:true,desc:'All items completed at PUMCH. Report delivered.'},
-      {label:'Payment Settled',time:'Jul 22, 11:30',done:true,desc:'Final ¥32,600 charged. ¥6,520 released.'},
+      {label:'Payment Settled',time:'Jul 22, 11:30',done:true,desc:'Final ¥32,600 charged. Pre-auth fully released.'},
     ],
     reviewed:false
   },
@@ -472,13 +535,14 @@ const orders = [
     hospital:'Shanghai Ninth People\'s Hospital',
     total:'¥128,000',
     status:'in_progress',
+    addon:{name:'Bone Graft (Guided Bone Regeneration)',reason:'Insufficient bone volume identified during Stage 2 planning',price:8000,status:'pending'},
     stages:[
       {label:'Package Selected',time:'Jul 16, 14:00',done:true},
       {label:'Flight & Hotel Booked',time:'Jul 16, 14:20',done:true},
-      {label:'Pre-Auth Confirmed',time:'Jul 16, 14:21',done:true,desc:'VISA ending ****4532, ¥153,600 frozen (120%)'},
-      {label:'Stage 1 - Consultation',time:'Aug 5, 09:00',done:true,desc:'CBCT + Treatment plan confirmed'},
-      {label:'Stage 2 - Implant Surgery',time:'Aug 12, 08:00',done:false,status:'pending'},
-      {label:'Stage 3 - Crown Placement',time:'Feb 2027',done:false,status:'pending'},
+      {label:'Pre-Auth Confirmed',time:'Jul 16, 14:21',done:true,desc:'VISA ending ****4532, ¥128,000 frozen (100%)'},
+      {label:'Stage 1 - Consultation',time:'Aug 5, 09:00',done:true,desc:'CBCT + Treatment plan confirmed · Stage payment ¥12,800 (10%) released'},
+      {label:'Stage 2 - Implant Surgery',time:'Aug 12, 08:00',done:false,status:'pending',desc:'¥64,000 (50%) charged on your confirmation'},
+      {label:'Stage 3 - Crown Placement',time:'Feb 2027',done:false,status:'pending',desc:'¥51,200 (40%) charged on your confirmation'},
     ],
     reviewed:false
   }
@@ -671,7 +735,7 @@ function renderWizard(){
   html += `<div class="card" style="margin-top:12px;background:linear-gradient(135deg,var(--navy),#1E4D7B);color:#fff;">
     <div style="font-size:11px;opacity:.7;margin-bottom:4px;">Estimated Total</div>
     <div style="font-size:24px;font-weight:800;">¥${subtotal.toLocaleString()}</div>
-    <div style="font-size:11px;opacity:.7;margin-top:2px;">Pre-auth will freeze ¥${Math.round(subtotal*1.2).toLocaleString()} (120%)</div>
+    <div style="font-size:11px;opacity:.7;margin-top:2px;">Pre-auth will freeze ¥${subtotal.toLocaleString()} (100%) · Held in UnionPay escrow</div>
   </div>`;
 
   document.getElementById('wizard-content').innerHTML = html;
@@ -718,14 +782,22 @@ function renderSummary(){
       <div class="summary-row"><span>Hotel (3 nights)</span><span>¥${hotelPrice.toLocaleString()}</span></div>
       ${extraPrice>0?`<div class="summary-row"><span>Extra Services</span><span>¥${extraPrice.toLocaleString()}</span></div>`:''}
       <div class="summary-row total"><span>Total</span><span>¥${subtotal.toLocaleString()}</span></div>
-      <div style="font-size:11px;color:var(--sub);margin-top:6px;">Pre-authorization: ¥${Math.round(subtotal*1.2).toLocaleString()} will be frozen on your VISA card</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:6px;">Pre-authorization: ¥${subtotal.toLocaleString()} (100%) will be frozen on your VISA card — no charge before service confirmation.</div>
+    </div>
+    <div class="escrow-flow">
+      <div class="escrow-step"><div class="escrow-dot">1</div>Pre-auth frozen<br>(100%)</div>
+      <div class="escrow-arrow">→</div>
+      <div class="escrow-step"><div class="escrow-dot">2</div>Confirm per<br>service stage</div>
+      <div class="escrow-arrow">→</div>
+      <div class="escrow-step"><div class="escrow-dot">3</div>Charged &<br>remainder released</div>
     </div>
     <button class="btn btn-primary" onclick="placeOrder()">
-      🔒 Authorize VISA Pre-Auth (¥${Math.round(subtotal*1.2).toLocaleString()})
+      🔒 Authorize VISA Pre-Auth (¥${subtotal.toLocaleString()})
     </button>
     <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--sub);">
       Your card will not be charged until services are completed.<br>
-      <span style="color:var(--teal);">🔒 Secured by UnionPay</span>
+      Add-ons during treatment require your in-app confirmation — unconfirmed add-ons are never charged.<br>
+      <span style="color:var(--teal);">🔒 Secured by UnionPay Escrow</span>
     </div>
   `;
   document.getElementById('summary-content').innerHTML = html;
@@ -753,7 +825,7 @@ function placeOrder(){
     stages: [
       {label:'Package Selected',time:'Just now',done:true},
       {label:'Flight & Hotel Booked',time:'Just now',done:true},
-      {label:'Pre-Auth Confirmed',time:'Just now',done:true,desc:`VISA ending ****${String(Math.floor(Math.random()*9000)+1000)}, ¥${Math.round(subtotal*1.2).toLocaleString()} frozen`},
+      {label:'Pre-Auth Confirmed',time:'Just now',done:true,desc:`VISA ending ****${String(Math.floor(Math.random()*9000)+1000)}, ¥${subtotal.toLocaleString()} frozen (100%)`},
       {label:'Service Day',time:'Upcoming',done:false,status:'pending'},
     ],
     reviewed:false
@@ -784,6 +856,7 @@ function renderOrders(){
             <div style="font-size:11px;color:${statusColor};font-weight:600;">● ${statusText}</div>
           </div>
         </div>
+        ${o.addon && o.addon.status==='pending'?`<div style="font-size:11px;color:#B45309;margin-top:6px;font-weight:600;">🔔 Add-on request pending your confirmation</div>`:''}
         ${o.reviewed?`<div style="font-size:11px;color:var(--star);margin-top:6px;">★★★★★ Reviewed</div>`:(o.status==='completed'?`<div style="font-size:11px;color:var(--teal);margin-top:6px;">✏️ Leave a review</div>`:'')}
       </div>`;
     });
@@ -804,6 +877,7 @@ function showOrderDetail(orderId){
       <div style="font-size:12px;color:var(--sub);margin-top:4px;">${o.hospital}</div>
       <div style="font-size:11px;color:var(--sub);">Order ID: ${o.id}</div>
       <div style="font-weight:800;font-size:22px;color:var(--navy);margin-top:8px;">${o.total}</div>
+      <div style="margin-top:8px;"><span class="badge">🔒 UnionPay Escrow · Pay after service</span></div>
     </div>
     <div class="section-title" style="font-size:16px;">Timeline</div>
     <div class="timeline">
@@ -820,6 +894,47 @@ function showOrderDetail(orderId){
     </div>`;
   });
   html += '</div>';
+
+  // Escrow status (in-progress orders)
+  if(o.status==='in_progress'){
+    html += `<div class="card" style="background:linear-gradient(135deg,var(--navy),#1E4D7B);color:#fff;">
+      <div style="font-size:13px;font-weight:700;">🛡️ Escrow Status · UnionPay</div>
+      <div class="escrow-row" style="margin-top:8px;"><span style="opacity:.8;">Pre-auth frozen (100%)</span><span>¥128,000</span></div>
+      <div class="escrow-row"><span style="opacity:.8;">Released after Stage 1 confirmation</span><span style="color:#7DD3C8;">¥12,800</span></div>
+      <div class="escrow-row"><span style="opacity:.8;">Still held in escrow</span><span>¥115,200</span></div>
+      <div style="font-size:10px;opacity:.7;margin-top:6px;">Funds are released per stage only after your in-app confirmation.</div>
+    </div>`;
+  }
+
+  // Add-on request (增项确认)
+  if(o.addon && o.addon.status==='pending'){
+    html += `<div class="addon-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:13px;font-weight:800;color:#B45309;">🔔 Add-on Request from Hospital</div>
+        <span class="badge badge-gold">Pending</span>
+      </div>
+      <div style="font-size:14px;font-weight:700;margin-top:8px;">${o.addon.name}</div>
+      <div style="font-size:12px;color:var(--sub);margin-top:4px;">${o.addon.reason}</div>
+      <div style="font-size:18px;font-weight:800;color:var(--navy);margin-top:8px;">¥${o.addon.price.toLocaleString()}</div>
+      <div class="addon-actions">
+        <button class="btn btn-primary" style="flex:1" onclick="confirmAddon('${o.id}')">✓ Confirm & Authorize</button>
+        <button class="btn btn-outline" style="flex:1" onclick="declineAddon('${o.id}')">✕ Decline</button>
+      </div>
+      <div class="addon-note">Per service agreement: add-ons proceed only after your in-app confirmation. Unconfirmed add-ons are never charged. Confirming adds a ¥${o.addon.price.toLocaleString()} pre-authorization.</div>
+    </div>`;
+  }
+  if(o.addon && o.addon.status==='confirmed'){
+    html += `<div class="card" style="border:2px solid var(--teal);background:#F0FDFA;">
+      <div style="font-size:13px;font-weight:700;color:var(--teal);">✓ Add-on Confirmed: ${o.addon.name}</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:4px;">¥${o.addon.price.toLocaleString()} pre-authorization added. Charged upon service completion.</div>
+    </div>`;
+  }
+  if(o.addon && o.addon.status==='declined'){
+    html += `<div class="card" style="background:#F9FAFB;">
+      <div style="font-size:13px;font-weight:700;color:var(--sub);">✕ Add-on Declined: ${o.addon.name}</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:4px;">No charge. The hospital has been notified.</div>
+    </div>`;
+  }
 
   if(o.status==='completed' && !o.reviewed){
     html += `<button class="btn btn-gold" onclick="showReview('${o.id}')" style="margin-top:16px;">⭐ Write a Review</button>`;
@@ -878,6 +993,25 @@ function submitReview(orderId){
   if(o){ o.reviewed = true; }
   showToast('✅ Review submitted! Thank you.');
   setTimeout(()=>showOrderDetail(orderId), 1000);
+}
+
+// ============ ADD-ON (增项) ============
+function confirmAddon(orderId){
+  const o = orders.find(x=>x.id===orderId);
+  if(!o || !o.addon) return;
+  o.addon.status = 'confirmed';
+  const base = parseInt(o.total.replace(/[^\d]/g,''));
+  o.total = '¥' + (base + o.addon.price).toLocaleString();
+  o.stages.splice(4, 0, {label:'Add-on Confirmed: Bone Graft', time:'Just now', done:true, desc:'¥' + o.addon.price.toLocaleString() + ' pre-auth added via VISA · charged on completion'});
+  showToast('✅ Add-on confirmed · ¥' + o.addon.price.toLocaleString() + ' pre-auth added');
+  setTimeout(()=>showOrderDetail(orderId), 1200);
+}
+function declineAddon(orderId){
+  const o = orders.find(x=>x.id===orderId);
+  if(!o || !o.addon) return;
+  o.addon.status = 'declined';
+  showToast('Add-on declined · no charge');
+  setTimeout(()=>showOrderDetail(orderId), 1200);
 }
 
 // ============ TOAST ============
