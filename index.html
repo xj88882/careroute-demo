@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CareRoute - Your Medical Journey to China</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#1A365D;--teal:#0D9488;--gold:#D4A843;
+  --bg:#F8FAFB;--card:#FFFFFF;--text:#1A1A2E;--sub:#6B7280;
+  --border:#E5E7EB;--red:#DC2626;--green:#059669;--star:#F59E0B;
+  --shadow:0 2px 12px rgba(0,0,0,.06);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#E8ECF0;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:20px 0;}
+.phone{
+  width:390px;min-height:844px;background:var(--bg);border-radius:40px;
+  overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.15);
+}
+.status-bar{height:44px;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 24px;color:#fff;font-size:11px;font-weight:600;}
+.status-bar span{opacity:.8;}
+.header{
+  background:linear-gradient(135deg,var(--navy) 0%,#1E4D7B 100%);
+  padding:16px 20px;display:flex;align-items:center;gap:12px;
+}
+.header-logo{width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;}
+.header-title{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.2px;}
+.header-sub{color:rgba(255,255,255,.7);font-size:11px;}
+.scroll{flex:1;overflow-y:auto;padding:16px 16px 90px;-webkit-overflow-scrolling:touch;max-height:calc(844px - 130px);}
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* Tab Bar */
+.tab-bar{
+  position:absolute;bottom:0;left:0;right:0;height:72px;
+  background:var(--card);display:flex;border-top:1px solid var(--border);
+  padding-bottom:8px;
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:4px;color:var(--sub);font-size:10px;
+  cursor:pointer;transition:.15s;border:none;background:none;font-family:inherit;
+}
+.tab-item.active{color:var(--teal);}
+.tab-item .icon{font-size:22px;}
+
+/* Cards */
+.card{
+  background:var(--card);border-radius:14px;padding:16px;
+  box-shadow:var(--shadow);margin-bottom:12px;
+}
+.card-tag{
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+}
+.tag-l1{background:#E8F4F0;color:var(--teal);}
+.tag-l2{background:#EFF6FF;color:var(--navy);}
+.tag-l3{background:#FEF3C7;color:#B45309;}
+
+/* Buttons */
+.btn{
+  display:block;width:100%;padding:14px;border-radius:12px;
+  border:none;font-size:15px;font-weight:700;cursor:pointer;
+  text-align:center;font-family:inherit;transition:.15s;
+}
+.btn-primary{background:var(--teal);color:#fff;}
+.btn-primary:active{background:#0B8277;}
+.btn-outline{background:var(--card);color:var(--navy);border:2px solid var(--navy);}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-sm{padding:10px 18px;font-size:13px;width:auto;display:inline-block;}
+
+/* Section */
+.section-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.section-sub{font-size:13px;color:var(--sub);margin-bottom:16px;}
+
+/* Badge */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;
+  background:#F0FDF4;color:var(--green);
+}
+.badge-gold{background:#FFFBEB;color:#B45309;}
+
+/* Toast */
+.toast{
+  position:absolute;top:60px;left:50%;transform:translateX(-50%);
+  background:#1A1A2E;color:#fff;padding:10px 24px;border-radius:24px;
+  font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;
+  pointer-events:none;
+}
+.toast.show{opacity:1;}
+
+/* HOME - Dual Entry */
+.home-hero{
+  background:linear-gradient(135deg,var(--navy) 0%,#1E4D7B 100%);
+  margin:-16px -16px 16px;padding:28px 20px 24px;
+}
+.home-hero h1{color:#fff;font-size:22px;font-weight:800;line-height:1.3;}
+.home-hero p{color:rgba(255,255,255,.75);font-size:13px;margin-top:6px;}
+.entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+.entry-card{
+  background:rgba(255,255,255,.15);border-radius:14px;padding:18px 14px;
+  cursor:pointer;transition:.2s;backdrop-filter:blur(10px);text-align:center;
+}
+.entry-card:active{transform:scale(.97);}
+.entry-card .emoji{font-size:40px;margin-bottom:8px;}
+.entry-card .title{color:#fff;font-size:16px;font-weight:700;}
+.entry-card .desc{color:rgba(255,255,255,.7);font-size:11px;margin-top:4px;}
+.entry-card .arrow{color:var(--gold);font-size:12px;margin-top:6px;}
+.trust-bar{
+  display:flex;justify-content:space-around;padding:20px 0 8px;
+  text-align:center;
+}
+.trust-item .num{font-size:20px;font-weight:800;color:var(--navy);}
+.trust-item .label{font-size:11px;color:var(--sub);}
+
+/* COMPARE CARDS */
+.compare-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+}
+.compare-card{
+  background:var(--card);border-radius:12px;padding:12px 8px;
+  text-align:center;border:2px solid var(--border);cursor:pointer;
+  transition:.15s;position:relative;
+}
+.compare-card:hover,.compare-card.selected{border-color:var(--teal);}
+.compare-card.recommended{border-color:var(--navy);}
+.compare-card.recommended::before{
+  content:'Most Popular';position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:#fff;font-size:9px;font-weight:700;
+  padding:2px 8px;border-radius:10px;white-space:nowrap;
+}
+.compare-card .level{font-size:18px;font-weight:800;color:var(--navy);}
+.compare-card .price{font-size:13px;font-weight:700;color:var(--teal);margin:4px 0;}
+.compare-card .items{font-size:10px;color:var(--sub);line-height:1.6;text-align:left;min-height:80px;}
+.compare-card .savings{font-size:11px;color:var(--green);font-weight:700;margin:6px 0;}
+.compare-card .stars{color:var(--star);font-size:14px;}
+.compare-card .review-count{font-size:10px;color:var(--sub);}
+.compare-card .features{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-top:6px;}
+.compare-card .feat-tag{
+  font-size:9px;padding:2px 6px;border-radius:8px;
+  background:#E8F4F0;color:var(--teal);font-weight:600;
+}
+.compare-card .select-btn{
+  margin-top:8px;padding:8px;border-radius:8px;background:var(--teal);
+  color:#fff;font-size:11px;font-weight:700;border:none;cursor:pointer;width:100%;
+}
+
+/* WIZARD */
+.wizard-steps{display:flex;gap:0;margin-bottom:20px;}
+.wizard-step{
+  flex:1;text-align:center;position:relative;padding-top:28px;
+  font-size:10px;color:var(--sub);font-weight:600;
+}
+.wizard-step .dot{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:24px;height:24px;border-radius:50%;background:var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  color:#fff;font-weight:700;
+}
+.wizard-step.active .dot{background:var(--teal);}
+.wizard-step.done .dot{background:var(--green);}
+.wizard-step::after{
+  content:'';position:absolute;top:11px;left:60%;width:80%;height:2px;
+  background:var(--border);z-index:-1;
+}
+.wizard-step:last-child::after{display:none;}
+
+.flight-option,.hotel-option{
+  background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;
+  border:2px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+}
+.flight-option.selected,.hotel-option.selected{border-color:var(--teal);background:#F0FDFA;}
+
+/* ORDER SUMMARY */
+.summary-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid var(--border);}
+.summary-row.total{font-size:18px;font-weight:800;color:var(--navy);border:none;}
+
+/* ORDER DETAIL */
+.timeline{padding:0;}
+.timeline-item{display:flex;gap:12px;padding:12px 0;position:relative;}
+.timeline-item::before{
+  content:'';position:absolute;left:11px;top:36px;bottom:-12px;width:2px;background:var(--border);
+}
+.timeline-item:last-child::before{display:none;}
+.timeline-dot{
+  width:24px;height:24px;border-radius:50%;background:var(--teal);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:11px;z-index:1;
+}
+.timeline-dot.pending{background:var(--border);color:var(--sub);}
+.timeline-dot.warn{background:var(--gold);}
+.timeline-content{flex:1;}
+.timeline-content .title{font-size:14px;font-weight:700;color:var(--text);}
+.timeline-content .time{font-size:11px;color:var(--sub);margin-top:2px;}
+.timeline-content .desc{font-size:12px;color:var(--sub);margin-top:4px;}
+
+/* REVIEW STARS */
+.star-rating{display:flex;gap:4px;}
+.star-rating .star{font-size:28px;color:var(--border);cursor:pointer;transition:.15s;}
+.star-rating .star.active{color:var(--star);}
+
+/* Back button */
+.back-btn{
+  display:inline-flex;align-items:center;gap:4px;color:var(--navy);
+  font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;
+  font-family:inherit;margin-bottom:12px;
+}
+.overlay-badge{
+  position:absolute;top:12px;right:12px;
+  background:var(--red);color:#fff;font-size:10px;font-weight:700;
+  width:18px;height:18px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;
+}
+.inline-input{
+  width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;
+  font-size:14px;font-family:inherit;background:var(--card);
+}
+.inline-input:focus{outline:none;border-color:var(--teal);}
+</style>
+</head>
+<body>
+
+<div class="phone" id="app">
+  <!-- Status Bar -->
+  <div class="status-bar"><span>9:41</span><span>📶 🔋</span></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">CR</div>
+    <div>
+      <div class="header-title">CareRoute</div>
+      <div class="header-sub">Your Medical Journey to China</div>
+    </div>
+  </div>
+
+  <!-- Scroll Area -->
+  <div class="scroll" id="scrollArea">
+
+    <!-- ========== SCREEN: HOME ========== -->
+    <div class="screen active" id="screen-home">
+      <div class="home-hero">
+        <h1>World-class healthcare.<br>At a fraction of the cost.</h1>
+        <p>Premium medical packages + curated travel experience</p>
+        <div class="entry-grid">
+          <div class="entry-card" onclick="navigateTo('compare','physical')">
+            <div class="emoji">🩺</div>
+            <div class="title">Health Checkup</div>
+            <div class="desc">Precision screening & early detection</div>
+            <div class="arrow">View Packages →</div>
+          </div>
+          <div class="entry-card" onclick="navigateTo('compare','dental')">
+            <div class="emoji">🦷</div>
+            <div class="title">Dental Care</div>
+            <div class="desc">Implants, orthodontics & cosmetic</div>
+            <div class="arrow">View Packages →</div>
+          </div>
+        </div>
+      </div>
+      <div class="trust-bar">
+        <div class="trust-item"><div class="num">41K+</div><div class="label">Foreign patients<br>in 2025</div></div>
+        <div class="trust-item"><div class="num">4.8</div><div class="label">Average rating<br>from 1,200+ reviews</div></div>
+        <div class="trust-item"><div class="num">70%</div><div class="label">Avg. savings<br>vs. US prices</div></div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,#F0FDFA,#E8F4F0);">
+        <div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:4px;">✨ Why CareRoute?</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.6;">
+          ✓ JCI-accredited hospitals &nbsp; ✓ English-speaking coordinators<br>
+          ✓ Visa-friendly travel &nbsp; ✓ Transparent pricing &nbsp; ✓ VISA pre-auth security
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN: COMPARE ========== -->
+    <div class="screen" id="screen-compare">
+      <button class="back-btn" onclick="navigateTo('home')">← Back</button>
+      <div id="compare-content"></div>
+    </div>
+
+    <!-- ========== SCREEN: WIZARD (Flight/Hotel/Extra) ========== -->
+    <div class="screen" id="screen-wizard">
+      <button class="back-btn" id="wiz-back" onclick="wizardBack()">← Back</button>
+      <div id="wizard-content"></div>
+    </div>
+
+    <!-- ========== SCREEN: SUMMARY ========== -->
+    <div class="screen" id="screen-summary">
+      <button class="back-btn" onclick="navigateTo('compare',currentCategory)">← Back</button>
+      <div id="summary-content"></div>
+    </div>
+
+    <!-- ========== SCREEN: ORDERS ========== -->
+    <div class="screen" id="screen-orders">
+      <div id="orders-content"></div>
+    </div>
+
+    <!-- ========== SCREEN: ORDER DETAIL ========== -->
+    <div class="screen" id="screen-order-detail">
+      <button class="back-btn" onclick="navigateTo('orders')">← Back to Orders</button>
+      <div id="order-detail-content"></div>
+    </div>
+
+    <!-- ========== SCREEN: REVIEW ========== -->
+    <div class="screen" id="screen-review">
+      <button class="back-btn" onclick="showOrderDetail(currentOrderId)">← Back</button>
+      <div id="review-content"></div>
+    </div>
+
+    <!-- ========== SCREEN: PROFILE ========== -->
+    <div class="screen" id="screen-profile">
+      <div style="text-align:center;padding:30px 0;">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--teal);margin:0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:700;">JS</div>
+        <div style="font-size:18px;font-weight:800;margin-top:10px;">John Smith</div>
+        <div style="font-size:12px;color:var(--sub);">john.smith@email.com</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:13px;color:var(--sub);">This is a design prototype (DAMO).</div>
+        <div style="font-size:13px;color:var(--sub);margin-top:4px;">Full functionality coming soon.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="navigateTo('home')" id="tab-home">
+      <span class="icon">🏠</span>Home
+    </button>
+    <button class="tab-item" onclick="navigateTo('orders')" id="tab-orders">
+      <span class="icon">📋</span>My Orders
+    </button>
+    <button class="tab-item" onclick="navigateTo('profile')" id="tab-profile">
+      <span class="icon">👤</span>Me
+    </button>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+const packages = {
+  physical: {
+    title: 'Health Checkup Packages',
+    subtitle: 'Precision screening at China\'s top hospitals',
+    emoji: '🩺',
+    tiers: [
+      {
+        level:'L1', name:'Essential', tag:'tag-l1',
+        price:'¥5,000 – 15,000',
+        usPrice:'$1,800 – 5,500',
+        savings:'Save up to 70%',
+        items:'Blood Panel\nECG\nAbdominal Ultrasound\nChest X-Ray\nTumor Markers',
+        stars:4.8, reviews:126,
+        features:['English Support','Bilingual Report','3-Day Turnaround'],
+        recommended:false,
+        desc:'Core screening for generally healthy individuals. Covers essential organ function, cardiovascular basics, and common cancer markers.'
+      },
+      {
+        level:'L2', name:'Premium', tag:'tag-l2',
+        price:'¥15,000 – 30,000',
+        usPrice:'$5,500 – 11,000',
+        savings:'Save up to 75%',
+        items:'All L1 Items\nLow-Dose Lung CT\nCardiac Ultrasound\nCarotid Ultrasound\nGastroscopy + Colonoscopy\nFull Body MRI (optional)',
+        stars:4.9, reviews:89,
+        features:['VIP Fast Track','Private Lounge','Same-Day Results'],
+        recommended:true,
+        desc:'Comprehensive screening recommended for 40+ or those with family history. Includes advanced imaging and endoscopic examination.'
+      },
+      {
+        level:'L3', name:'VIP', tag:'tag-l3',
+        price:'¥30,000 – 80,000+',
+        usPrice:'$11,000 – 30,000',
+        savings:'Save up to 80%',
+        items:'All L2 Items\nPET-CT Whole Body\nGenetic Testing\nFunctional Medicine Panel\nMulti-Specialist Consultation\nPersonal Health Manager',
+        stars:5.0, reviews:42,
+        features:['Private Doctor','Luxury Transport','5-Star Recovery Suite'],
+        recommended:false,
+        desc:'The ultimate health assessment. Includes cutting-edge diagnostics, genetic profiling, and a dedicated health team for ongoing management.'
+      }
+    ]
+  },
+  dental: {
+    title: 'Dental Care Packages',
+    subtitle: 'World-class dentistry at accessible prices',
+    emoji: '🦷',
+    tiers: [
+      {
+        level:'L1', name:'Essential', tag:'tag-l1',
+        price:'¥5,000 – 15,000',
+        usPrice:'$2,000 – 6,000',
+        savings:'Save up to 65%',
+        items:'Single Implant\nCrown Restoration\nTeeth Whitening\nBasic Cleaning',
+        stars:4.7, reviews:98,
+        features:['English Dentist','Digital Planning','3D CBCT'],
+        recommended:false,
+        desc:'Single-tooth solutions. Ideal for patients needing one implant or crown replacement.'
+      },
+      {
+        level:'L2', name:'Premium', tag:'tag-l2',
+        price:'¥15,000 – 50,000',
+        usPrice:'$6,000 – 20,000',
+        savings:'Save up to 72%',
+        items:'All-on-4 / All-on-6\nMultiple Implants\nBone Graft (if needed)\nTemporary Prosthesis\nFinal Zirconia Bridge',
+        stars:4.9, reviews:67,
+        features:['VIP Recovery Room','Implant Warranty','Remote Follow-up'],
+        recommended:true,
+        desc:'Full-arch restoration. Best for patients needing multiple implants or full-mouth reconstruction.'
+      },
+      {
+        level:'L3', name:'VIP', tag:'tag-l3',
+        price:'¥50,000 – 300,000+',
+        usPrice:'$20,000 – 120,000',
+        savings:'Save up to 78%',
+        items:'Full Mouth Rehabilitation\nPremium Implant Brands\nSinus Lift / Ridge Augmentation\nCustom Smile Design\n5-Year Full Warranty',
+        stars:5.0, reviews:31,
+        features:['Chief Dentist','Private Suite','5-Yr Warranty'],
+        recommended:false,
+        desc:'Complete smile transformation. Top-tier materials, senior surgeons, and comprehensive warranty coverage.'
+      }
+    ]
+  }
+};
+
+const flights = [
+  { airline:'Air China', flight:'CA982', dept:'JFK (New York)', arr:'PEK (Beijing)', date:'Oct 15', time:'16:50-18:30+1', duration:'13h 40m', price:'¥6,800', class:'Economy' },
+  { airline:'United', flight:'UA888', dept:'SFO (San Francisco)', arr:'PEK (Beijing)', date:'Oct 15', time:'11:20-14:50+1', duration:'12h 30m', price:'¥8,200', class:'Economy' },
+  { airline:'Singapore Airlines', flight:'SQ802', dept:'SIN (Singapore)', arr:'PVG (Shanghai)', date:'Oct 15', time:'08:30-14:00', duration:'5h 30m', price:'¥3,500', class:'Economy' },
+  { airline:'Cathay Pacific', flight:'CX888', dept:'HKG', arr:'PVG (Shanghai)', date:'Oct 15', time:'09:00-11:30', duration:'2h 30m', price:'¥2,800', class:'Economy' },
+];
+
+const hotels = [
+  { name:'Shangri-La Beijing', stars:5, dist:'2.5km from hospital', price:'¥1,800/night', type:'Luxury', feature:'Medical recovery menu' },
+  { name:'JW Marriott Shanghai', stars:5, dist:'1.8km from hospital', price:'¥1,500/night', type:'Luxury', feature:'Wheelchair accessible' },
+  { name:'Holiday Inn Express', stars:4, dist:'3.2km from hospital', price:'¥680/night', type:'Comfort', feature:'24h front desk' },
+  { name:'Medical Recovery Suite', stars:5, dist:'0.5km from hospital', price:'¥2,200/night', type:'Medical Exclusive', feature:'Nurse call system, rehab facilities' },
+];
+
+// ============ STATE ============
+let currentCategory = 'physical';
+let currentTierIndex = 1; // L2 by default
+let currentStep = 1;
+let selectedFlight = 0;
+let selectedHotel = 0;
+let selectedExtras = { transfer:true, guide:true, minorLang:false };
+let currentOrderId = null;
+
+// ============ ORDERS STORE ============
+const orders = [
+  {
+    id:'CR-2026-0715-001',
+    date:'2026-07-15',
+    type:'physical', tierIndex:1,
+    package:'Health Checkup - L2 Premium',
+    hospital:'Peking Union Medical College Hospital',
+    total:'¥32,600',
+    status:'completed',
+    stages:[
+      {label:'Package Selected',time:'Jul 15, 10:30',done:true},
+      {label:'Flight & Hotel Booked',time:'Jul 15, 10:45',done:true},
+      {label:'Pre-Auth Confirmed',time:'Jul 15, 10:46',done:true,desc:'VISA ending ****8291, ¥39,120 frozen (120%)'},
+      {label:'Checkup Completed',time:'Jul 22, 11:00',done:true,desc:'All items completed at PUMCH. Report delivered.'},
+      {label:'Payment Settled',time:'Jul 22, 11:30',done:true,desc:'Final ¥32,600 charged. ¥6,520 released.'},
+    ],
+    reviewed:false
+  },
+  {
+    id:'CR-2026-0716-002',
+    date:'2026-07-16',
+    type:'dental', tierIndex:2,
+    package:'Dental - L3 VIP',
+    hospital:'Shanghai Ninth People\'s Hospital',
+    total:'¥128,000',
+    status:'in_progress',
+    stages:[
+      {label:'Package Selected',time:'Jul 16, 14:00',done:true},
+      {label:'Flight & Hotel Booked',time:'Jul 16, 14:20',done:true},
+      {label:'Pre-Auth Confirmed',time:'Jul 16, 14:21',done:true,desc:'VISA ending ****4532, ¥153,600 frozen (120%)'},
+      {label:'Stage 1 - Consultation',time:'Aug 5, 09:00',done:true,desc:'CBCT + Treatment plan confirmed'},
+      {label:'Stage 2 - Implant Surgery',time:'Aug 12, 08:00',done:false,status:'pending'},
+      {label:'Stage 3 - Crown Placement',time:'Feb 2027',done:false,status:'pending'},
+    ],
+    reviewed:false
+  }
+];
+
+// ============ NAVIGATION ============
+function navigateTo(screen, category){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+
+  switch(screen){
+    case 'home':
+      document.getElementById('screen-home').classList.add('active');
+      document.getElementById('tab-home').classList.add('active');
+      break;
+    case 'compare':
+      currentCategory = category || 'physical';
+      document.getElementById('screen-compare').classList.add('active');
+      renderCompare();
+      break;
+    case 'wizard':
+      currentStep = 1;
+      document.getElementById('screen-wizard').classList.add('active');
+      renderWizard();
+      break;
+    case 'summary':
+      document.getElementById('screen-summary').classList.add('active');
+      renderSummary();
+      break;
+    case 'orders':
+      document.getElementById('screen-orders').classList.add('active');
+      document.getElementById('tab-orders').classList.add('active');
+      renderOrders();
+      break;
+    case 'order-detail':
+      document.getElementById('screen-order-detail').classList.add('active');
+      break;
+    case 'review':
+      document.getElementById('screen-review').classList.add('active');
+      break;
+    case 'profile':
+      document.getElementById('screen-profile').classList.add('active');
+      document.getElementById('tab-profile').classList.add('active');
+      break;
+  }
+  document.getElementById('scrollArea').scrollTop = 0;
+}
+
+// ============ COMPARE SCREEN ============
+function renderCompare(){
+  const data = packages[currentCategory];
+  let html = `
+    <div class="section-title">${data.emoji} ${data.title}</div>
+    <div class="section-sub">${data.subtitle}</div>
+    <div class="compare-grid">
+  `;
+  data.tiers.forEach((t,i)=>{
+    const cls = i===currentTierIndex ? 'selected' : '';
+    const rec = t.recommended ? 'recommended' : '';
+    html += `
+      <div class="compare-card ${cls} ${rec}" onclick="selectTier(${i})">
+        <div style="margin-bottom:6px;"><span class="card-tag ${t.tag}">${t.level} ${t.name}</span></div>
+        <div class="price">${t.price}</div>
+        <div class="items">${t.items.replace(/\n/g,'<br>')}</div>
+        <div class="savings">💰 ${t.savings}</div>
+        <div class="stars">${'★'.repeat(Math.floor(t.stars))}${t.stars%1? '½':''}</div>
+        <div class="review-count">${t.stars} (${t.reviews} reviews)</div>
+        <div class="features">${t.features.map(f=>`<span class="feat-tag">${f}</span>`).join('')}</div>
+        <button class="select-btn" onclick="event.stopPropagation();selectTierAndNext(${i})">Select</button>
+      </div>
+    `;
+  });
+  html += '</div>';
+
+  // Selected tier detail
+  const sel = data.tiers[currentTierIndex];
+  html += `
+    <div class="card" style="margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <span class="card-tag ${sel.tag}">${sel.level} ${sel.name}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--navy);margin-left:8px;">Selected</span>
+        </div>
+        <span style="font-size:20px;font-weight:800;color:var(--teal);">${sel.price.split('–')[0]}</span>
+      </div>
+      <div style="margin-top:10px;font-size:13px;color:var(--sub);line-height:1.6;">${sel.desc}</div>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+        <div style="font-size:14px;font-weight:700;color:var(--green);">${sel.savings}</div>
+        <div style="font-size:12px;color:var(--sub);">vs. US price</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="navigateTo('wizard')" style="margin-top:8px;">
+      Continue to Travel Setup →
+    </button>
+  `;
+  document.getElementById('compare-content').innerHTML = html;
+}
+
+function selectTier(i){ currentTierIndex = i; renderCompare(); }
+function selectTierAndNext(i){ currentTierIndex = i; navigateTo('wizard'); }
+
+// ============ WIZARD ============
+function renderWizard(){
+  const data = packages[currentCategory];
+  const sel = data.tiers[currentTierIndex];
+  let html = '';
+
+  // Step indicator
+  html += `<div class="wizard-steps">
+    <div class="wizard-step ${currentStep>=1?'active':''} ${currentStep>1?'done':''}"><div class="dot">${currentStep>1?'✓':'1'}</div>Flight</div>
+    <div class="wizard-step ${currentStep>=2?'active':''} ${currentStep>2?'done':''}"><div class="dot">${currentStep>2?'✓':'2'}</div>Hotel</div>
+    <div class="wizard-step ${currentStep>=3?'active':''} ${currentStep>3?'done':''}"><div class="dot">${currentStep>3?'✓':'3'}</div>Extras</div>
+  </div>`;
+
+  // Bottom fixed summary bar
+  const medPrice = parseInt(sel.price.split('–')[0].replace(/[^\d]/g,''));
+  const flightPrice = parseInt(flights[selectedFlight].price.replace(/[^\d]/g,''));
+  const hotelPrice = parseInt(hotels[selectedHotel].price.replace(/[^\d]/g,'')) * 3; // 3 nights
+  const extraPrice = (selectedExtras.transfer?500:0)+(selectedExtras.guide?800:0)+(selectedExtras.minorLang?1500:0);
+  const subtotal = medPrice + flightPrice + hotelPrice + extraPrice;
+
+  if(currentStep === 1){
+    // Flight selection
+    html += `<div style="font-size:14px;font-weight:700;margin-bottom:12px;">Step 1: Select Your Flight</div>`;
+    html += `<div style="display:flex;gap:8px;margin-bottom:12px;">
+      <select class="inline-input" style="flex:1;font-size:12px;"><option>New York (JFK)</option><option>San Francisco (SFO)</option><option>Singapore (SIN)</option><option>Hong Kong (HKG)</option></select>
+      <select class="inline-input" style="flex:1;font-size:12px;"><option>Beijing (PEK)</option><option>Shanghai (PVG)</option></select>
+    </div>`;
+    flights.forEach((f,i)=>{
+      html += `<div class="flight-option ${i===selectedFlight?'selected':''}" onclick="selectedFlight=${i};renderWizard();">
+        <div>
+          <div style="font-weight:700;">${f.airline} ${f.flight}</div>
+          <div style="font-size:11px;color:var(--sub);">${f.dept} → ${f.arr}</div>
+          <div style="font-size:11px;color:var(--sub);">${f.date} · ${f.time} · ${f.duration}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:800;color:var(--teal);">${f.price}</div>
+          <div style="font-size:10px;color:var(--sub);">${f.class}</div>
+        </div>
+      </div>`;
+    });
+  }
+  else if(currentStep === 2){
+    html += `<div style="font-size:14px;font-weight:700;margin-bottom:12px;">Step 2: Select Your Hotel</div>`;
+    html += `<div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input class="inline-input" style="flex:1;font-size:12px;" value="Oct 16 - Oct 19 (3 nights)" readonly>
+    </div>`;
+    hotels.forEach((h,i)=>{
+      html += `<div class="hotel-option ${i===selectedHotel?'selected':''}" onclick="selectedHotel=${i};renderWizard();">
+        <div>
+          <div style="font-weight:700;">${h.name}</div>
+          <div style="font-size:11px;color:var(--sub);">${'★'.repeat(h.stars)} · ${h.dist} · ${h.type}</div>
+          <div style="font-size:10px;color:var(--teal);">${h.feature}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:800;color:var(--teal);">${h.price}</div>
+          <div style="font-size:10px;color:var(--sub);">per night</div>
+        </div>
+      </div>`;
+    });
+  }
+  else if(currentStep === 3){
+    html += `<div style="font-size:14px;font-weight:700;margin-bottom:12px;">Step 3: Extra Services</div>`;
+    const extras = [
+      {key:'transfer',label:'Airport Transfer',desc:'Private car pickup at arrival',price:'¥500'},
+      {key:'guide',label:'English-Speaking Guide',desc:'Full-time interpreter & city guide',price:'¥800/day'},
+      {key:'minorLang',label:'Minor Language Service',desc:'Russian / Arabic / Japanese / Korean etc.',price:'¥1,500/day'},
+    ];
+    extras.forEach(e=>{
+      html += `<div class="card" style="display:flex;justify-content:space-between;align-items:center;${selectedExtras[e.key]?'border:2px solid var(--teal);background:#F0FDFA;':''}" onclick="selectedExtras['${e.key}']=!selectedExtras['${e.key}'];renderWizard();">
+        <div>
+          <div style="font-weight:700;font-size:14px;">${e.label}</div>
+          <div style="font-size:11px;color:var(--sub);">${e.desc}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-weight:700;color:var(--teal);">${e.price}</span>
+          <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${selectedExtras[e.key]?'var(--teal)':'var(--border)'};background:${selectedExtras[e.key]?'var(--teal)':'white'};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;">${selectedExtras[e.key]?'✓':''}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  // Bottom nav
+  html += `<div style="margin-top:20px;display:flex;gap:8px;">
+    ${currentStep>1?`<button class="btn btn-outline" style="flex:1" onclick="currentStep--;renderWizard();">← Previous</button>`:''}
+    ${currentStep<3?`<button class="btn btn-primary" style="flex:1" onclick="currentStep++;renderWizard();">Next →</button>`:`<button class="btn btn-primary" style="flex:1" onclick="navigateTo('summary')">Review & Pay →</button>`}
+  </div>`;
+
+  // Running total
+  html += `<div class="card" style="margin-top:12px;background:linear-gradient(135deg,var(--navy),#1E4D7B);color:#fff;">
+    <div style="font-size:11px;opacity:.7;margin-bottom:4px;">Estimated Total</div>
+    <div style="font-size:24px;font-weight:800;">¥${subtotal.toLocaleString()}</div>
+    <div style="font-size:11px;opacity:.7;margin-top:2px;">Pre-auth will freeze ¥${Math.round(subtotal*1.2).toLocaleString()} (120%)</div>
+  </div>`;
+
+  document.getElementById('wizard-content').innerHTML = html;
+}
+
+function wizardBack(){
+  if(currentStep > 1){ currentStep--; renderWizard(); }
+  else navigateTo('compare', currentCategory);
+}
+
+// ============ SUMMARY ============
+function renderSummary(){
+  const data = packages[currentCategory];
+  const sel = data.tiers[currentTierIndex];
+  const medPrice = parseInt(sel.price.split('–')[0].replace(/[^\d]/g,''));
+  const flightPrice = parseInt(flights[selectedFlight].price.replace(/[^\d]/g,''));
+  const hotelPrice = parseInt(hotels[selectedHotel].price.replace(/[^\d]/g,'')) * 3;
+  const extraPrice = (selectedExtras.transfer?500:0)+(selectedExtras.guide?800:0)+(selectedExtras.minorLang?1500:0);
+  const subtotal = medPrice + flightPrice + hotelPrice + extraPrice;
+
+  let html = `
+    <div class="section-title">Order Summary</div>
+    <div class="section-sub">Please review before payment</div>
+    <div class="card">
+      <div style="font-weight:800;font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+        ${data.emoji} ${sel.level} ${sel.name} ${data.title.split(' ')[0]}
+        <span class="card-tag ${sel.tag}">${sel.level}</span>
+      </div>
+      <div style="font-size:12px;color:var(--sub);">${sel.desc.slice(0,100)}...</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:8px;">✈️ Flight</div>
+      <div style="font-size:13px;">${flights[selectedFlight].airline} ${flights[selectedFlight].flight}</div>
+      <div style="font-size:11px;color:var(--sub);">${flights[selectedFlight].dept} → ${flights[selectedFlight].arr} · ${flights[selectedFlight].date}</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:8px;">🏨 Hotel</div>
+      <div style="font-size:13px;">${hotels[selectedHotel].name}</div>
+      <div style="font-size:11px;color:var(--sub);">3 nights · ${hotels[selectedHotel].type}</div>
+    </div>
+    <div class="card">
+      <div class="summary-row"><span>Medical Package</span><span>¥${medPrice.toLocaleString()}</span></div>
+      <div class="summary-row"><span>Flight</span><span>¥${flightPrice.toLocaleString()}</span></div>
+      <div class="summary-row"><span>Hotel (3 nights)</span><span>¥${hotelPrice.toLocaleString()}</span></div>
+      ${extraPrice>0?`<div class="summary-row"><span>Extra Services</span><span>¥${extraPrice.toLocaleString()}</span></div>`:''}
+      <div class="summary-row total"><span>Total</span><span>¥${subtotal.toLocaleString()}</span></div>
+      <div style="font-size:11px;color:var(--sub);margin-top:6px;">Pre-authorization: ¥${Math.round(subtotal*1.2).toLocaleString()} will be frozen on your VISA card</div>
+    </div>
+    <button class="btn btn-primary" onclick="placeOrder()">
+      🔒 Authorize VISA Pre-Auth (¥${Math.round(subtotal*1.2).toLocaleString()})
+    </button>
+    <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--sub);">
+      Your card will not be charged until services are completed.<br>
+      <span style="color:var(--teal);">🔒 Secured by UnionPay</span>
+    </div>
+  `;
+  document.getElementById('summary-content').innerHTML = html;
+}
+
+function placeOrder(){
+  const data = packages[currentCategory];
+  const sel = data.tiers[currentTierIndex];
+  const id = 'CR-2026-' + new Date().toISOString().slice(5,10).replace(/-/g,'') + '-' + String(orders.length+1).padStart(3,'0');
+  const medPrice = parseInt(sel.price.split('–')[0].replace(/[^\d]/g,''));
+  const flightPrice = parseInt(flights[selectedFlight].price.replace(/[^\d]/g,''));
+  const hotelPrice = parseInt(hotels[selectedHotel].price.replace(/[^\d]/g,'')) * 3;
+  const extraPrice = (selectedExtras.transfer?500:0)+(selectedExtras.guide?800:0)+(selectedExtras.minorLang?1500:0);
+  const subtotal = medPrice + flightPrice + hotelPrice + extraPrice;
+
+  orders.unshift({
+    id,
+    date: new Date().toISOString().slice(0,10),
+    type: currentCategory,
+    tierIndex: currentTierIndex,
+    package: `${currentCategory==='physical'?'Health Checkup':'Dental'} - ${sel.level} ${sel.name}`,
+    hospital: currentCategory==='physical'?'Peking Union Medical College Hospital':'Shanghai Ninth People\'s Hospital',
+    total: '¥'+subtotal.toLocaleString(),
+    status: 'confirmed',
+    stages: [
+      {label:'Package Selected',time:'Just now',done:true},
+      {label:'Flight & Hotel Booked',time:'Just now',done:true},
+      {label:'Pre-Auth Confirmed',time:'Just now',done:true,desc:`VISA ending ****${String(Math.floor(Math.random()*9000)+1000)}, ¥${Math.round(subtotal*1.2).toLocaleString()} frozen`},
+      {label:'Service Day',time:'Upcoming',done:false,status:'pending'},
+    ],
+    reviewed:false
+  });
+
+  showToast('✅ Order placed! Pre-auth confirmed.');
+  setTimeout(()=>navigateTo('orders'), 1500);
+}
+
+// ============ ORDERS ============
+function renderOrders(){
+  let html = '<div class="section-title">My Orders</div>';
+  if(orders.length===0){
+    html += '<div class="card" style="text-align:center;padding:40px;"><div style="font-size:40px;">📋</div><div style="font-size:14px;color:var(--sub);margin-top:8px;">No orders yet</div></div>';
+  } else {
+    orders.forEach(o=>{
+      const statusColor = o.status==='completed'?'var(--green)':o.status==='in_progress'?'var(--gold)':'var(--teal)';
+      const statusText = o.status==='completed'?'Completed':o.status==='in_progress'?'In Progress':'Confirmed';
+      html += `<div class="card" onclick="showOrderDetail('${o.id}')" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <div>
+            <div style="font-weight:700;">${o.package}</div>
+            <div style="font-size:11px;color:var(--sub);">${o.hospital}</div>
+            <div style="font-size:10px;color:var(--sub);">${o.id}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800;color:var(--navy);">${o.total}</div>
+            <div style="font-size:11px;color:${statusColor};font-weight:600;">● ${statusText}</div>
+          </div>
+        </div>
+        ${o.reviewed?`<div style="font-size:11px;color:var(--star);margin-top:6px;">★★★★★ Reviewed</div>`:(o.status==='completed'?`<div style="font-size:11px;color:var(--teal);margin-top:6px;">✏️ Leave a review</div>`:'')}
+      </div>`;
+    });
+  }
+  document.getElementById('orders-content').innerHTML = html;
+}
+
+function showOrderDetail(orderId){
+  currentOrderId = orderId;
+  const o = orders.find(x=>x.id===orderId);
+  if(!o) return;
+  let html = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-weight:800;font-size:16px;">${o.package}</div>
+        <span class="badge">${o.status==='completed'?'Completed':o.status==='in_progress'?'In Progress':'Confirmed'}</span>
+      </div>
+      <div style="font-size:12px;color:var(--sub);margin-top:4px;">${o.hospital}</div>
+      <div style="font-size:11px;color:var(--sub);">Order ID: ${o.id}</div>
+      <div style="font-weight:800;font-size:22px;color:var(--navy);margin-top:8px;">${o.total}</div>
+    </div>
+    <div class="section-title" style="font-size:16px;">Timeline</div>
+    <div class="timeline">
+  `;
+  o.stages.forEach(s=>{
+    const cls = s.done ? '' : 'pending';
+    html += `<div class="timeline-item">
+      <div class="timeline-dot ${cls}">${s.done?'✓':'○'}</div>
+      <div class="timeline-content">
+        <div class="title">${s.label}</div>
+        <div class="time">${s.time}</div>
+        ${s.desc?`<div class="desc">${s.desc}</div>`:''}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+
+  if(o.status==='completed' && !o.reviewed){
+    html += `<button class="btn btn-gold" onclick="showReview('${o.id}')" style="margin-top:16px;">⭐ Write a Review</button>`;
+  }
+  if(o.status==='completed' && o.reviewed){
+    html += `<div class="card" style="text-align:center;color:var(--star);font-size:20px;">★★★★★<br><span style="font-size:12px;color:var(--sub);">You've reviewed this order</span></div>`;
+  }
+
+  document.getElementById('order-detail-content').innerHTML = html;
+  navigateTo('order-detail');
+}
+
+// ============ REVIEW ============
+function showReview(orderId){
+  currentOrderId = orderId;
+  const o = orders.find(x=>x.id===orderId);
+  let html = `
+    <div class="section-title">Write a Review</div>
+    <div class="section-sub">${o.package}</div>
+    <div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:8px;">Overall Rating</div>
+      <div class="star-rating" id="stars-overall">
+        ${[1,2,3,4,5].map(i=>`<span class="star" onclick="setStars('overall',${i})">★</span>`).join('')}
+      </div>
+    </div>
+  `;
+  const dims = [
+    {key:'attitude',label:'Staff Attitude'},
+    {key:'english',label:'English Communication'},
+    {key:'wait',label:'Wait Time'},
+    {key:'report',label:'Report Quality'},
+  ];
+  dims.forEach(d=>{
+    html += `<div class="card">
+      <div style="font-weight:700;font-size:14px;margin-bottom:8px;">${d.label}</div>
+      <div class="star-rating" id="stars-${d.key}">
+        ${[1,2,3,4,5].map(i=>`<span class="star" onclick="setStars('${d.key}',${i})">★</span>`).join('')}
+      </div>
+    </div>`;
+  });
+  html += `<button class="btn btn-primary" onclick="submitReview('${orderId}')" style="margin-top:12px;">Submit Review</button>`;
+  document.getElementById('review-content').innerHTML = html;
+  navigateTo('review');
+}
+
+window.reviewScores = {};
+function setStars(dim, val){
+  window.reviewScores[dim] = val;
+  const container = document.getElementById('stars-'+dim);
+  if(container){
+    container.querySelectorAll('.star').forEach((s,i)=>{ s.classList.toggle('active', i<val); });
+  }
+}
+function submitReview(orderId){
+  const o = orders.find(x=>x.id===orderId);
+  if(o){ o.reviewed = true; }
+  showToast('✅ Review submitted! Thank you.');
+  setTimeout(()=>showOrderDetail(orderId), 1000);
+}
+
+// ============ TOAST ============
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+// ============ INIT ============
+navigateTo('home');
+</script>
+
+</body>
+</html>
