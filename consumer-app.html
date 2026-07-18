@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -708,9 +708,8 @@ function renderCompare(){
       <div class="items">${items.replace(/\n/g,'<br>')}</div>
       <div class="savings">${'★'.repeat(Math.floor(tier.stars))} ${tier.stars}</div>
       <div class="review-count">${tier.reviews} reviews</div>
+      <button class="select-btn" onclick="event.stopPropagation();selectTierAndNext(${i})">${t('selectPackage')}</button>
     </div>`;
-    // Separate select button
-    html += `<button class="select-btn" onclick="event.stopPropagation();selectTierAndNext(${i})">${t('selectPackage')}</button></div>`;
   });
   html += '</div>';
   // Detail card
