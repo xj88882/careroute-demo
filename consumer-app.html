@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CareRoute / 医路通 — Medical Journey to China</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#1A365D;--teal:#0D9488;--gold:#D4A843;
+  --bg:#F8FAFB;--card:#FFFFFF;--text:#1A1A2E;--sub:#6B7280;
+  --border:#E5E7EB;--red:#DC2626;--green:#059669;--star:#F59E0B;
+  --shadow:0 2px 12px rgba(0,0,0,.06);
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  background:#D1D5DB;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:16px;
+}
+.app-shell{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;justify-content:center;}
+.phone{
+  width:390px;min-height:844px;background:var(--bg);border-radius:40px;
+  overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.18);
+}
+.status-bar{height:44px;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 24px;color:#fff;font-size:11px;font-weight:600;}
+.header{
+  background:linear-gradient(135deg,var(--navy) 0%,#1E4D7B 100%);
+  padding:12px 16px;display:flex;align-items:center;gap:10px;
+}
+.header-logo{width:30px;height:30px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0;}
+.header-info{flex:1;}
+.header-title{color:#fff;font-size:16px;font-weight:700;letter-spacing:-.2px;}
+.header-sub{color:rgba(255,255,255,.7);font-size:10px;}
+.lang-toggle{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  color:#fff;padding:5px 10px;border-radius:16px;font-size:11px;font-weight:600;
+  cursor:pointer;font-family:inherit;white-space:nowrap;transition:.2s;
+}
+.lang-toggle:active{background:rgba(255,255,255,.25);}
+.scroll{flex:1;overflow-y:auto;padding:14px 14px 90px;-webkit-overflow-scrolling:touch;max-height:calc(844px - 126px);}
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* Tab Bar */
+.tab-bar{
+  position:absolute;bottom:0;left:0;right:0;height:68px;
+  background:var(--card);display:flex;border-top:1px solid var(--border);
+  padding-bottom:6px;
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;color:var(--sub);font-size:10px;
+  cursor:pointer;transition:.15s;border:none;background:none;font-family:inherit;
+}
+.tab-item.active{color:var(--teal);}
+.tab-item .icon{font-size:20px;}
+
+/* Cards */
+.card{
+  background:var(--card);border-radius:14px;padding:14px;
+  box-shadow:var(--shadow);margin-bottom:10px;
+}
+.card-tag{
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+}
+.tag-l1{background:#E8F4F0;color:var(--teal);}
+.tag-l2{background:#EFF6FF;color:var(--navy);}
+.tag-l3{background:#FEF3C7;color:#B45309;}
+
+/* Buttons */
+.btn{
+  display:block;width:100%;padding:13px;border-radius:12px;
+  border:none;font-size:15px;font-weight:700;cursor:pointer;
+  text-align:center;font-family:inherit;transition:.15s;letter-spacing:.2px;
+}
+.btn-primary{background:var(--teal);color:#fff;}
+.btn-primary:active{background:#0B8277;}
+.btn-outline{background:var(--card);color:var(--navy);border:2px solid var(--navy);}
+.btn-gold{background:var(--gold);color:#fff;}
+
+.section-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:3px;}
+.section-sub{font-size:12px;color:var(--sub);margin-bottom:14px;}
+
+.badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;
+  background:#F0FDF4;color:var(--green);
+}
+
+/* Toast */
+.toast{
+  position:absolute;top:60px;left:50%;transform:translateX(-50%);
+  background:#1A1A2E;color:#fff;padding:10px 22px;border-radius:22px;
+  font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;
+  pointer-events:none;white-space:nowrap;
+}
+.toast.show{opacity:1;}
+
+/* HOME - Hero */
+.home-hero{
+  background:linear-gradient(135deg,var(--navy) 0%,#1E4D7B 100%);
+  margin:-14px -14px 14px;padding:24px 18px 20px;
+}
+.home-hero h1{color:#fff;font-size:20px;font-weight:800;line-height:1.35;}
+.home-hero p{color:rgba(255,255,255,.7);font-size:12px;margin-top:4px;}
+.entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.entry-card{
+  background:rgba(255,255,255,.14);border-radius:14px;padding:16px 12px;
+  cursor:pointer;transition:.2s;text-align:center;border:1px solid rgba(255,255,255,.1);
+}
+.entry-card:active{transform:scale(.97);background:rgba(255,255,255,.22);}
+.entry-card .emoji{font-size:36px;margin-bottom:6px;}
+.entry-card .title{color:#fff;font-size:15px;font-weight:700;}
+.entry-card .desc{color:rgba(255,255,255,.65);font-size:10px;margin-top:4px;}
+.entry-card .arrow{color:var(--gold);font-size:11px;margin-top:5px;}
+
+.trust-bar{display:flex;justify-content:space-around;padding:16px 0 6px;text-align:center;}
+.trust-item .num{font-size:18px;font-weight:800;color:var(--navy);}
+.trust-item .label{font-size:10px;color:var(--sub);line-height:1.4;}
+
+/* Compare Cards */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+.compare-card{
+  background:var(--card);border-radius:12px;padding:10px 7px;
+  text-align:center;border:2px solid var(--border);cursor:pointer;
+  transition:.15s;position:relative;
+}
+.compare-card:hover,.compare-card.selected{border-color:var(--teal);}
+.compare-card.recommended{border-color:var(--navy);}
+.compare-card.recommended::before{
+  content:'★';position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  background:var(--navy);color:#fff;font-size:9px;font-weight:700;
+  padding:2px 10px;border-radius:10px;white-space:nowrap;
+}
+.compare-card .level{font-size:16px;font-weight:800;color:var(--navy);}
+.compare-card .price-usd{font-size:11px;font-weight:700;color:var(--teal);margin:2px 0;}
+.compare-card .price-rmb{font-size:10px;color:var(--sub);}
+.compare-card .items{font-size:9px;color:var(--sub);line-height:1.6;text-align:left;min-height:80px;margin-top:4px;}
+.compare-card .savings{font-size:10px;color:var(--green);font-weight:700;margin:5px 0;}
+.compare-card .stars{color:var(--star);font-size:13px;}
+.compare-card .review-count{font-size:9px;color:var(--sub);}
+.compare-card .select-btn{
+  margin-top:6px;padding:7px;border-radius:8px;background:var(--teal);
+  color:#fff;font-size:11px;font-weight:700;border:none;cursor:pointer;width:100%;
+}
+
+/* Wizard */
+.wizard-steps{display:flex;gap:0;margin-bottom:18px;}
+.wizard-step{
+  flex:1;text-align:center;position:relative;padding-top:26px;
+  font-size:9px;color:var(--sub);font-weight:600;
+}
+.wizard-step .dot{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:22px;height:22px;border-radius:50%;background:var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+  color:#fff;font-weight:700;
+}
+.wizard-step.active .dot{background:var(--teal);}
+.wizard-step.done .dot{background:var(--green);}
+.wizard-step::after{
+  content:'';position:absolute;top:10px;left:60%;width:80%;height:2px;
+  background:var(--border);z-index:-1;
+}
+.wizard-step:last-child::after{display:none;}
+
+.flight-option,.hotel-option{
+  background:var(--card);border-radius:12px;padding:12px;margin-bottom:8px;
+  border:2px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:.15s;
+}
+.flight-option.selected,.hotel-option.selected{border-color:var(--teal);background:#F0FDFA;}
+
+.summary-row{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid var(--border);}
+.summary-row.total{font-size:17px;font-weight:800;color:var(--navy);border:none;}
+
+.timeline-item{display:flex;gap:10px;padding:10px 0;position:relative;}
+.timeline-item::before{
+  content:'';position:absolute;left:10px;top:34px;bottom:-10px;width:2px;background:var(--border);
+}
+.timeline-item:last-child::before{display:none;}
+.timeline-dot{
+  width:22px;height:22px;border-radius:50%;background:var(--teal);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:10px;z-index:1;
+}
+.timeline-dot.pending{background:var(--border);color:var(--sub);}
+.timeline-content{flex:1;}
+.timeline-content .tl-title{font-size:13px;font-weight:700;color:var(--text);}
+.timeline-content .tl-time{font-size:10px;color:var(--sub);margin-top:2px;}
+.timeline-content .tl-desc{font-size:11px;color:var(--sub);margin-top:3px;}
+
+.star-rating{display:flex;gap:3px;}
+.star-rating .star{font-size:26px;color:var(--border);cursor:pointer;transition:.15s;}
+.star-rating .star.active{color:var(--star);}
+
+.back-btn{
+  display:inline-flex;align-items:center;gap:3px;color:var(--navy);
+  font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;
+  font-family:inherit;margin-bottom:10px;padding:2px 0;
+}
+.inline-input{
+  width:100%;padding:11px 12px;border:2px solid var(--border);border-radius:10px;
+  font-size:13px;font-family:inherit;background:var(--card);
+}
+.inline-input:focus{outline:none;border-color:var(--teal);}
+
+/* Price highlight for Western users */
+.price-stack{text-align:right;}
+.price-stack .primary{font-size:16px;font-weight:800;color:var(--navy);}
+.price-stack .secondary{font-size:11px;color:var(--sub);}
+.price-stack .usd{color:var(--teal);font-weight:700;}
+
+/* Dual currency display */
+.dual-price{display:flex;flex-direction:column;align-items:flex-end;}
+.dual-price .rmb{font-weight:800;font-size:15px;color:var(--teal);}
+.dual-price .usd{font-size:10px;color:var(--sub);}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+<div class="phone" id="app">
+  <!-- Status Bar -->
+  <div class="status-bar"><span>9:41</span><span id="statusIcons">📶 🔋</span></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">CR</div>
+    <div class="header-info">
+      <div class="header-title" data-i18n="appName">CareRoute / 医路通</div>
+      <div class="header-sub" data-i18n="tagline">Your Medical Journey to China</div>
+    </div>
+    <button class="lang-toggle" onclick="toggleLang()" data-i18n="langLabel">中</button>
+  </div>
+
+  <!-- Scroll Area -->
+  <div class="scroll" id="scrollArea">
+
+    <!-- HOME -->
+    <div class="screen active" id="screen-home">
+      <div class="home-hero">
+        <h1 data-i18n="heroTitle">World-Class Healthcare.<br>At a Fraction of the Cost.</h1>
+        <p data-i18n="heroSub">Premium medical packages + curated China travel experience</p>
+        <div class="entry-grid">
+          <div class="entry-card" onclick="navigateTo('compare','physical')">
+            <div class="emoji">🩺</div>
+            <div class="title" data-i18n="catPhysical">Health Checkup</div>
+            <div class="desc" data-i18n="catPhysicalDesc">Precision screening & early detection</div>
+            <div class="arrow" data-i18n="viewPackages">View Packages →</div>
+          </div>
+          <div class="entry-card" onclick="navigateTo('compare','dental')">
+            <div class="emoji">🦷</div>
+            <div class="title" data-i18n="catDental">Dental Care</div>
+            <div class="desc" data-i18n="catDentalDesc">Implants, orthodontics & cosmetic</div>
+            <div class="arrow" data-i18n="viewPackages">View Packages →</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="trust-bar">
+        <div class="trust-item"><div class="num">41K+</div><div class="label" data-i18n="trust1">International<br>Patients 2025</div></div>
+        <div class="trust-item"><div class="num">4.8</div><div class="label" data-i18n="trust2">Avg Rating<br>1,200+ Reviews</div></div>
+        <div class="trust-item"><div class="num">~70%</div><div class="label" data-i18n="trust3">Avg Savings<br>vs. US Prices</div></div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#F0FDFA,#E8F4F0);">
+        <div style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:3px;" data-i18n="whyUs">✨ Why CareRoute?</div>
+        <div style="font-size:11px;color:var(--sub);line-height:1.7;">
+          <span data-i18n="why1">✓ JCI-Accredited Hospitals</span><br>
+          <span data-i18n="why2">✓ English-Speaking Coordinators</span><br>
+          <span data-i18n="why3">✓ Visa-Friendly Travel Packages</span><br>
+          <span data-i18n="why4">✓ Transparent Pricing, No Hidden Fees</span><br>
+          <span data-i18n="why5">✓ VISA/MC Pre-Auth Security</span>
+        </div>
+      </div>
+
+      <!-- How It Works -->
+      <div class="card">
+        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:10px;" data-i18n="howTitle">📱 How It Works</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;background:#F8FAFB;border-radius:10px;padding:10px 12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0;">1</div>
+            <div style="font-size:12px;color:var(--text);"><b data-i18n="how1Title">Choose a Package</b><br><span style="color:var(--sub);" data-i18n="how1Desc">Compare Health Checkup or Dental plans tailored to your needs</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#F8FAFB;border-radius:10px;padding:10px 12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0;">2</div>
+            <div style="font-size:12px;color:var(--text);"><b data-i18n="how2Title">Book Travel</b><br><span style="color:var(--sub);" data-i18n="how2Desc">Select flights, hotels, and extra services in one flow</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#F8FAFB;border-radius:10px;padding:10px 12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0;">3</div>
+            <div style="font-size:12px;color:var(--text);"><b data-i18n="how3Title">Secure with Pre-Auth</b><br><span style="color:var(--sub);" data-i18n="how3Desc">VISA pre-authorization holds your booking — no charge until service</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#F8FAFB;border-radius:10px;padding:10px 12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0;">4</div>
+            <div style="font-size:12px;color:var(--text);"><b data-i18n="how4Title">Arrive & Receive Care</b><br><span style="color:var(--sub);" data-i18n="how4Desc">Airport pickup, hospital green channel, English coordinator throughout</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARE -->
+    <div class="screen" id="screen-compare">
+      <button class="back-btn" onclick="navigateTo('home')">← <span data-i18n="back">Back</span></button>
+      <div id="compare-content"></div>
+    </div>
+
+    <!-- WIZARD -->
+    <div class="screen" id="screen-wizard">
+      <button class="back-btn" id="wiz-back" onclick="wizardBack()">← <span data-i18n="back">Back</span></button>
+      <div id="wizard-content"></div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="screen" id="screen-summary">
+      <button class="back-btn" onclick="navigateTo('compare',currentCategory)">← <span data-i18n="back">Back</span></button>
+      <div id="summary-content"></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="screen" id="screen-orders">
+      <div id="orders-content"></div>
+    </div>
+
+    <!-- ORDER DETAIL -->
+    <div class="screen" id="screen-order-detail">
+      <button class="back-btn" onclick="navigateTo('orders')">← <span data-i18n="backToOrders">Back to Orders</span></button>
+      <div id="order-detail-content"></div>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="screen" id="screen-review">
+      <button class="back-btn" onclick="showOrderDetail(currentOrderId)">← <span data-i18n="back">Back</span></button>
+      <div id="review-content"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="screen-profile">
+      <div style="text-align:center;padding:24px 0;">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--teal);margin:0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:700;">JS</div>
+        <div style="font-size:17px;font-weight:800;margin-top:8px;">John Smith</div>
+        <div style="font-size:11px;color:var(--sub);">john.smith@email.com</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:13px;color:var(--sub);" data-i18n="demoNotice">This is a design prototype (DAMO).</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:4px;" data-i18n="demoNotice2">Full functionality coming soon. Questions? Contact us.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-item active" onclick="navigateTo('home')" id="tab-home">
+      <span class="icon">🏠</span><span data-i18n="tabHome">Home</span>
+    </button>
+    <button class="tab-item" onclick="navigateTo('orders')" id="tab-orders">
+      <span class="icon">📋</span><span data-i18n="tabOrders">Orders</span>
+    </button>
+    <button class="tab-item" onclick="navigateTo('profile')" id="tab-profile">
+      <span class="icon">👤</span><span data-i18n="tabProfile">Me</span>
+    </button>
+  </div>
+</div>
+</div>
+
+<script>
+// ==================== I18N ====================
+const i18n = {
+  en: {
+    appName:'CareRoute / 医路通', tagline:'Your Medical Journey to China',
+    langLabel:'中', // "切换中文"
+    heroTitle:'World-Class Healthcare.<br>At a Fraction of the Cost.',
+    heroSub:'Premium medical packages + curated China travel experience',
+    catPhysical:'Health Checkup', catPhysicalDesc:'Precision screening & early detection',
+    catDental:'Dental Care', catDentalDesc:'Implants, orthodontics & cosmetic',
+    viewPackages:'View Packages →',
+    trust1:'International<br>Patients 2025', trust2:'Avg Rating<br>1,200+ Reviews', trust3:'Avg Savings<br>vs. US Prices',
+    whyUs:'✨ Why CareRoute?',
+    why1:'✓ JCI-Accredited Hospitals', why2:'✓ English-Speaking Coordinators',
+    why3:'✓ Visa-Friendly Travel Packages', why4:'✓ Transparent Pricing, No Hidden Fees',
+    why5:'✓ VISA/MC Pre-Auth Security',
+    howTitle:'📱 How It Works',
+    how1Title:'Choose a Package', how1Desc:'Compare Health Checkup or Dental plans tailored to your needs',
+    how2Title:'Book Travel', how2Desc:'Select flights, hotels, and extra services in one seamless flow',
+    how3Title:'Secure with Pre-Auth', how3Desc:'VISA pre-authorization holds your booking — no charge until services are completed',
+    how4Title:'Arrive & Receive Care', how4Desc:'Airport pickup, hospital green channel, English-speaking coordinator throughout your stay',
+    back:'Back', backToOrders:'Back to Orders',
+    tabHome:'Home', tabOrders:'Orders', tabProfile:'Me',
+    demoNotice:'This is a design prototype (DAMO).',
+    demoNotice2:'Full functionality coming soon. Questions? Contact us.',
+    // Compare
+    selectPackage:'Select Package', selected:'Selected',
+    includedItems:'Included Items', features:'Features',
+    vsUS:'vs. US price', continue:'Continue to Travel Setup →',
+    mostPopular:'Most Popular',
+    // Wizard
+    stepFlight:'Flight', stepHotel:'Hotel', stepExtras:'Extras',
+    step1Title:'Step 1: Select Your Flight',
+    step2Title:'Step 2: Select Your Hotel',
+    step3Title:'Step 3: Extra Services',
+    deptCity:'Departure City', arrCity:'Arrival City',
+    extraTransfer:'Airport Transfer', extraTransferDesc:'Private car pickup at arrival gate',
+    extraGuide:'English-Speaking Guide', extraGuideDesc:'Full-time interpreter & city guide',
+    extraLang:'Minor Language Service', extraLangDesc:'Russian / Arabic / Japanese / Korean etc.',
+    perNight:'per night', nights:'nights',
+    prev:'← Previous', next:'Next →', reviewPay:'Review & Pay →',
+    estTotal:'Estimated Total', preAuthNote:'Pre-auth will hold 120% of total on your card',
+    // Summary
+    orderSummary:'Order Summary', reviewBeforePay:'Please review before payment',
+    medicalPackage:'Medical Package', flight:'Flight', hotel:'Hotel',
+    extraServices:'Extra Services', total:'Total',
+    preAuthLine:'Pre-authorization: {0} will be held on your card',
+    authorizeBtn:'Lock In with VISA Pre-Auth ({0})',
+    secureNote:'Your card is not charged until services are completed.',
+    securedBy:'Secured by UnionPay / Visa',
+    // Orders
+    myOrders:'My Orders', noOrders:'No orders yet',
+    completed:'Completed', inProgress:'In Progress', confirmed:'Confirmed',
+    reviewed:'Reviewed', leaveReview:'Leave a review',
+    // Order Detail
+    timeline:'Timeline',
+    // Review
+    writeReview:'Write a Review', overallRating:'Overall Rating',
+    staffAttitude:'Staff Attitude', englishComm:'English Communication',
+    waitTime:'Wait Time', reportQuality:'Report Quality',
+    submitReview:'Submit Review',
+    // Toast
+    orderPlaced:'Order placed! Pre-auth confirmed.',
+    reviewDone:'Review submitted! Thank you.',
+    // Descriptions
+    descPhysicalL1:'Core screening for generally healthy individuals. Covers essential organ function, cardiovascular basics, and common cancer markers.',
+    descPhysicalL2:'Comprehensive screening for ages 40+ or family history. Includes advanced imaging and endoscopic exam.',
+    descPhysicalL3:'The ultimate health assessment. Cutting-edge diagnostics, genetic profiling, and a dedicated health team.',
+    descDentalL1:'Single-tooth solutions. Ideal for patients needing one implant or crown replacement.',
+    descDentalL2:'Full-arch restoration. Best for multiple implants or full-mouth reconstruction.',
+    descDentalL3:'Complete smile transformation. Top-tier materials, senior surgeons, comprehensive warranty.',
+  },
+  zh: {
+    appName:'CareRoute / 医路通', tagline:'您通往中国优质医疗的桥梁',
+    langLabel:'EN',
+    heroTitle:'世界级医疗服务。<br>费用仅需欧美的零头。',
+    heroSub:'高端医疗体检套餐 + 精选中国旅行体验',
+    catPhysical:'健康体检', catPhysicalDesc:'精密筛查，早期发现',
+    catDental:'齿科护理', catDentalDesc:'种植牙、正畸与美学修复',
+    viewPackages:'查看套餐 →',
+    trust1:'2025年国际<br>患者41K+人次', trust2:'平均评分 4.8<br>1,200+ 条评价', trust3:'较美国价格<br>平均节省约70%',
+    whyUs:'✨ 为什么选择 CareRoute？',
+    why1:'✓ JCI 认证合作医院', why2:'✓ 英文全程陪诊协调',
+    why3:'✓ 签证无忧旅行套餐', why4:'✓ 价格透明，无隐形消费',
+    why5:'✓ VISA/MC 预授权安全支付',
+    howTitle:'📱 使用流程',
+    how1Title:'选择套餐', how1Desc:'根据需求对比体检或齿科方案',
+    how2Title:'预订行程', how2Desc:'一站式选择机票、酒店及附加服务',
+    how3Title:'预授权锁定', how3Desc:'VISA 预授权冻结额度，服务完成后再扣款',
+    how4Title:'入境就医', how4Desc:'机场接机、医院绿色通道、英文协调员全程陪同',
+    back:'返回', backToOrders:'返回订单列表',
+    tabHome:'首页', tabOrders:'订单', tabProfile:'我的',
+    demoNotice:'此页面为设计原型（DAMO）',
+    demoNotice2:'完整功能即将上线。如有问题请联系我们。',
+    // Compare
+    selectPackage:'选择套餐', selected:'已选',
+    includedItems:'包含项目', features:'特色',
+    vsUS:'对比美国价格', continue:'继续设置行程 →',
+    mostPopular:'最受欢迎',
+    // Wizard
+    stepFlight:'机票', stepHotel:'酒店', stepExtras:'附加',
+    step1Title:'第1步：选择航班',
+    step2Title:'第2步：选择酒店',
+    step3Title:'第3步：附加服务',
+    deptCity:'出发城市', arrCity:'到达城市',
+    extraTransfer:'机场接送', extraTransferDesc:'专车到港接机服务',
+    extraGuide:'英文陪同翻译', extraGuideDesc:'全程英文翻译及城市向导',
+    extraLang:'小语种服务', extraLangDesc:'俄语 / 阿拉伯语 / 日语 / 韩语等',
+    perNight:'每晚', nights:'晚',
+    prev:'← 上一步', next:'下一步 →', reviewPay:'确认并支付 →',
+    estTotal:'预估总价', preAuthNote:'预授权将冻结总价的 120%',
+    // Summary
+    orderSummary:'订单确认', reviewBeforePay:'支付前请核对信息',
+    medicalPackage:'医疗套餐', flight:'机票', hotel:'酒店',
+    extraServices:'附加服务', total:'合计',
+    preAuthLine:'预授权冻结金额：{0}',
+    authorizeBtn:'确认 VISA 预授权（{0}）',
+    secureNote:'服务完成后才会实际扣款。',
+    securedBy:'由银联 / Visa 提供安全支付保障',
+    // Orders
+    myOrders:'我的订单', noOrders:'暂无订单',
+    completed:'已完成', inProgress:'进行中', confirmed:'已确认',
+    reviewed:'已评价', leaveReview:'写评价',
+    // Order Detail
+    timeline:'订单时间线',
+    // Review
+    writeReview:'写评价', overallRating:'总体评分',
+    staffAttitude:'服务态度', englishComm:'英文沟通',
+    waitTime:'等待时间', reportQuality:'报告质量',
+    submitReview:'提交评价',
+    // Toast
+    orderPlaced:'下单成功！预授权已确认。',
+    reviewDone:'评价已提交！感谢您的反馈。',
+    // Descriptions
+    descPhysicalL1:'适合健康状况良好的客户。涵盖基础器官功能、心血管指标及常见肿瘤标志物筛查。',
+    descPhysicalL2:'推荐40岁以上或有家族病史的客户。含低剂量肺部CT、心脏彩超及胃肠镜检查。',
+    descPhysicalL3:'至尊健康评估。包含PET-CT全身扫描、基因检测及专属健康管理团队。',
+    descDentalL1:'单颗牙齿修复方案。适合需要单颗种植牙或牙冠替换的客户。',
+    descDentalL2:'全口重建方案。适合需要多颗种植或全口修复的客户。',
+    descDentalL3:'彻底笑容焕新。顶级种植体品牌、资深主任医师、五年全面质保。',
+  }
+};
+
+let lang = 'en';
+
+function detectLang(){
+  const nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+  if(nav.startsWith('zh')) return 'zh';
+  return 'en';
+}
+
+function setLang(l){
+  lang = l;
+  document.documentElement.lang = l;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(i18n[l] && i18n[l][key]) el.innerHTML = i18n[l][key];
+  });
+  // Update lang toggle button text
+  const btn = document.querySelector('.lang-toggle');
+  if(btn) btn.textContent = l==='en'?'中':'EN';
+  // Re-render current screen
+  refreshCurrentScreen();
+}
+
+function toggleLang(){
+  setLang(lang==='en'?'zh':'en');
+}
+
+function t(key, params){
+  let text = (i18n[lang] && i18n[lang][key]) ? i18n[lang][key] : key;
+  if(params){
+    Object.keys(params).forEach(k=>{ text = text.replace('{'+k+'}', params[k]); });
+  }
+  return text;
+}
+
+function refreshCurrentScreen(){
+  const active = document.querySelector('.screen.active');
+  if(!active) return;
+  const id = active.id;
+  if(id==='screen-compare') renderCompare();
+  else if(id==='screen-wizard') renderWizard();
+  else if(id==='screen-summary') renderSummary();
+  else if(id==='screen-orders') renderOrders();
+  else if(id==='screen-order-detail' && currentOrderId) showOrderDetail(currentOrderId);
+  else if(id==='screen-review' && currentOrderId) showReview(currentOrderId);
+}
+
+// ==================== DATA ====================
+const packages = {
+  physical: {
+    key:'physical',
+    tiers: [
+      {level:'L1',nameEn:'Essential',nameZh:'基础',tag:'tag-l1',
+       priceMin:5000,priceMax:15000,usdMin:700,usdMax:2100,
+       itemsEn:'Blood Panel\nECG\nAbdominal Ultrasound\nChest X-Ray\nTumor Markers',
+       itemsZh:'血常规+生化\n心电图\n腹部超声\n胸部X光\n肿瘤标志物',
+       stars:4.8,reviews:126,
+       featuresEn:'English Support | Bilingual Report | 3-Day Turnaround',
+       featuresZh:'英文陪同 | 双语报告 | 3日出结果',
+       recommended:false, descKey:'descPhysicalL1'},
+      {level:'L2',nameEn:'Premium',nameZh:'优享',tag:'tag-l2',
+       priceMin:15000,priceMax:30000,usdMin:2100,usdMax:4200,
+       itemsEn:'All L1 +\nLow-Dose Lung CT\nCardiac Ultrasound\nCarotid Ultrasound\nGastroscopy + Colonoscopy\nFull Body MRI (optional)',
+       itemsZh:'含L1全部项目 +\n低剂量肺部CT\n心脏彩超\n颈动脉超声\n无痛胃肠镜\n全身MRI（可选）',
+       stars:4.9,reviews:89,
+       featuresEn:'VIP Fast Track | Private Lounge | Same-Day Results',
+       featuresZh:'VIP绿色通道 | 私密休息室 | 当天出结果',
+       recommended:true, descKey:'descPhysicalL2'},
+      {level:'L3',nameEn:'VIP',nameZh:'尊享',tag:'tag-l3',
+       priceMin:30000,priceMax:80000,usdMin:4200,usdMax:11200,
+       itemsEn:'All L2 +\nPET-CT Whole Body\nGenetic Testing\nFunctional Medicine Panel\nMulti-Specialist Consultation\nPersonal Health Manager',
+       itemsZh:'含L2全部项目 +\nPET-CT全身扫描\n基因检测\n功能医学评估\n多学科专家会诊\n专属健康管家',
+       stars:5.0,reviews:42,
+       featuresEn:'Private Doctor | Luxury Transport | 5-Star Recovery Suite',
+       featuresZh:'私人医生 | 豪车接送 | 五星康复套房',
+       recommended:false, descKey:'descPhysicalL3'},
+    ]
+  },
+  dental: {
+    key:'dental',
+    tiers: [
+      {level:'L1',nameEn:'Essential',nameZh:'基础',tag:'tag-l1',
+       priceMin:5000,priceMax:15000,usdMin:700,usdMax:2100,
+       itemsEn:'Single Implant\nCrown Restoration\nTeeth Whitening\nBasic Cleaning',
+       itemsZh:'单颗种植牙\n牙冠修复\n牙齿美白\n基础洁牙',
+       stars:4.7,reviews:98,
+       featuresEn:'English Dentist | Digital Planning | 3D CBCT',
+       featuresZh:'英文牙医 | 数字化方案 | 3D CBCT',
+       recommended:false, descKey:'descDentalL1'},
+      {level:'L2',nameEn:'Premium',nameZh:'优享',tag:'tag-l2',
+       priceMin:15000,priceMax:50000,usdMin:2100,usdMax:7000,
+       itemsEn:'All-on-4 / All-on-6\nMultiple Implants\nBone Graft (if needed)\nTemporary Prosthesis\nFinal Zirconia Bridge',
+       itemsZh:'All-on-4/6 全口重建\n多颗种植牙\n植骨（如需）\n临时义齿\n二氧化锆终桥',
+       stars:4.9,reviews:67,
+       featuresEn:'VIP Recovery Room | Implant Warranty | Remote Follow-up',
+       featuresZh:'VIP康复室 | 种植体质保 | 远程复查',
+       recommended:true, descKey:'descDentalL2'},
+      {level:'L3',nameEn:'VIP',nameZh:'尊享',tag:'tag-l3',
+       priceMin:50000,priceMax:300000,usdMin:7000,usdMax:42000,
+       itemsEn:'Full Mouth Rehabilitation\nPremium Implant Brands\nSinus Lift / Ridge Augmentation\nCustom Smile Design\n5-Year Full Warranty',
+       itemsZh:'全口重建修复\n顶级种植体品牌\n上颌窦提升/牙槽嵴增量\n个性化微笑设计\n五年全面质保',
+       stars:5.0,reviews:31,
+       featuresEn:'Chief Dentist | Private Suite | 5-Year Full Warranty',
+       featuresZh:'主任医师主刀 | 私密诊疗套房 | 五年全面质保',
+       recommended:false, descKey:'descDentalL3'},
+    ]
+  }
+};
+
+function fmtRMB(v){ return '¥'+v.toLocaleString(); }
+function fmtUSD(v){ return '$'+v.toLocaleString(); }
+
+const flights = [
+  {airline:'Air China',flight:'CA982',dept:'JFK (New York)',arr:'PEK (Beijing)',dateEn:'Oct 15',dateZh:'10月15日',time:'16:50-18:30+1',duration:'13h 40m',price:6800},
+  {airline:'United',flight:'UA888',dept:'SFO (San Francisco)',arr:'PEK (Beijing)',dateEn:'Oct 15',dateZh:'10月15日',time:'11:20-14:50+1',duration:'12h 30m',price:8200},
+  {airline:'Singapore Airlines',flight:'SQ802',dept:'SIN (Singapore)',arr:'PVG (Shanghai)',dateEn:'Oct 15',dateZh:'10月15日',time:'08:30-14:00',duration:'5h 30m',price:3500},
+  {airline:'Cathay Pacific',flight:'CX888',dept:'HKG',arr:'PVG (Shanghai)',dateEn:'Oct 15',dateZh:'10月15日',time:'09:00-11:30',duration:'2h 30m',price:2800},
+];
+
+const hotels = [
+  {name:'Shangri-La Beijing / 北京香格里拉',stars:5,distEn:'2.5km from hospital',distZh:'距医院2.5公里',price:1800,typeEn:'Luxury',typeZh:'豪华',featEn:'Medical recovery menu',featZh:'术后康复餐'},
+  {name:'JW Marriott Shanghai / 上海JW万豪',stars:5,distEn:'1.8km from hospital',distZh:'距医院1.8公里',price:1500,typeEn:'Luxury',typeZh:'豪华',featEn:'Wheelchair accessible',featZh:'无障碍通道'},
+  {name:'Holiday Inn Express / 智选假日',stars:4,distEn:'3.2km from hospital',distZh:'距医院3.2公里',price:680,typeEn:'Comfort',typeZh:'舒适',featEn:'24h front desk',featZh:'24小时前台'},
+  {name:'Medical Recovery Suite / 医疗康复套房',stars:5,distEn:'0.5km from hospital',distZh:'距医院0.5公里',price:2200,typeEn:'Medical Exclusive',typeZh:'医疗专属',featEn:'Nurse call + rehab facilities',featZh:'护士呼叫+康复设施'},
+];
+
+// ==================== STATE ====================
+let currentCategory = 'physical';
+let currentTierIndex = 1;
+let currentStep = 1;
+let selectedFlight = 0;
+let selectedHotel = 0;
+let selectedExtras = {transfer:true, guide:true, minorLang:false};
+let currentOrderId = null;
+
+const orders = [
+  {
+    id:'CR-2026-0715-001',date:'2026-07-15',type:'physical',tierIndex:1,
+    hospitalEn:'Peking Union Medical College Hospital',hospitalZh:'北京协和医院',
+    total:'¥32,600',status:'completed',
+    stages:[
+      {labelEn:'Package Selected',labelZh:'套餐已选',timeEn:'Jul 15, 10:30',timeZh:'7月15日 10:30',done:true},
+      {labelEn:'Flight & Hotel Booked',labelZh:'机酒已订',timeEn:'Jul 15, 10:45',timeZh:'7月15日 10:45',done:true},
+      {labelEn:'Pre-Auth Confirmed',labelZh:'预授权已确认',timeEn:'Jul 15, 10:46',timeZh:'7月15日 10:46',done:true,descEn:'VISA ****8291, ¥39,120 frozen',descZh:'VISA ****8291, ¥39,120 已冻结'},
+      {labelEn:'Checkup Completed',labelZh:'体检完成',timeEn:'Jul 22, 11:00',timeZh:'7月22日 11:00',done:true,descEn:'All items done. Report delivered.',descZh:'全部项目完成，报告已交付'},
+      {labelEn:'Payment Settled',labelZh:'费用已结算',timeEn:'Jul 22, 11:30',timeZh:'7月22日 11:30',done:true,descEn:'¥32,600 charged. ¥6,520 released.',descZh:'实扣 ¥32,600，¥6,520 已释放'},
+    ],reviewed:false
+  },
+  {
+    id:'CR-2026-0716-002',date:'2026-07-16',type:'dental',tierIndex:2,
+    hospitalEn:'Shanghai Ninth People\'s Hospital',hospitalZh:'上海第九人民医院',
+    total:'¥128,000',status:'in_progress',
+    stages:[
+      {labelEn:'Package Selected',labelZh:'套餐已选',timeEn:'Jul 16, 14:00',timeZh:'7月16日 14:00',done:true},
+      {labelEn:'Flight & Hotel Booked',labelZh:'机酒已订',timeEn:'Jul 16, 14:20',timeZh:'7月16日 14:20',done:true},
+      {labelEn:'Pre-Auth Confirmed',labelZh:'预授权已确认',timeEn:'Jul 16, 14:21',timeZh:'7月16日 14:21',done:true,descEn:'VISA ****4532, ¥153,600 frozen',descZh:'VISA ****4532, ¥153,600 已冻结'},
+      {labelEn:'Stage 1 - Consultation',labelZh:'第1阶段 - 初诊',timeEn:'Aug 5, 09:00',timeZh:'8月5日 09:00',done:true,descEn:'CBCT + treatment plan confirmed',descZh:'CBCT + 治疗方案已确认'},
+      {labelEn:'Stage 2 - Surgery',labelZh:'第2阶段 - 手术',timeEn:'Aug 12, 08:00',timeZh:'8月12日 08:00',done:false,status:'pending'},
+      {labelEn:'Stage 3 - Crown',labelZh:'第3阶段 - 戴冠',timeEn:'Feb 2027',timeZh:'2027年2月',done:false,status:'pending'},
+    ],reviewed:false
+  }
+];
+
+// ==================== NAVIGATION ====================
+function navigateTo(screen, category){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  switch(screen){
+    case 'home': document.getElementById('screen-home').classList.add('active'); document.getElementById('tab-home').classList.add('active'); break;
+    case 'compare': currentCategory=category||'physical'; document.getElementById('screen-compare').classList.add('active'); renderCompare(); break;
+    case 'wizard': currentStep=1; document.getElementById('screen-wizard').classList.add('active'); renderWizard(); break;
+    case 'summary': document.getElementById('screen-summary').classList.add('active'); renderSummary(); break;
+    case 'orders': document.getElementById('screen-orders').classList.add('active'); document.getElementById('tab-orders').classList.add('active'); renderOrders(); break;
+    case 'order-detail': document.getElementById('screen-order-detail').classList.add('active'); break;
+    case 'review': document.getElementById('screen-review').classList.add('active'); break;
+    case 'profile': document.getElementById('screen-profile').classList.add('active'); document.getElementById('tab-profile').classList.add('active'); break;
+  }
+  document.getElementById('scrollArea').scrollTop = 0;
+}
+
+// ==================== COMPARE ====================
+function renderCompare(){
+  const data = packages[currentCategory];
+  let titleKey = currentCategory==='physical'?'catPhysical':'catDental';
+  let subKey = currentCategory==='physical'?'catPhysicalDesc':'catDentalDesc';
+  let html = `<div class="section-title">${t(titleKey)}</div><div class="section-sub">${t(subKey)}</div><div class="compare-grid">`;
+  data.tiers.forEach((tier,i)=>{
+    const cls = i===currentTierIndex?'selected':'';
+    const rec = tier.recommended?'recommended':'';
+    const name = lang==='zh'?tier.nameZh:tier.nameEn;
+    const items = lang==='zh'?tier.itemsZh:tier.itemsEn;
+    const feats = lang==='zh'?tier.featuresZh:tier.featuresEn;
+    const priceRange = fmtRMB(tier.priceMin)+' – '+fmtRMB(tier.priceMax);
+    const usdRange = fmtUSD(tier.usdMin)+' – '+fmtUSD(tier.usdMax);
+    html += `<div class="compare-card ${cls} ${rec}" onclick="selectTier(${i})">
+      <div style="margin-bottom:5px;"><span class="card-tag ${tier.tag}">${tier.level} ${name}</span></div>
+      <div class="price-usd">${usdRange}</div>
+      <div class="price-rmb">${priceRange}</div>
+      <div class="items">${items.replace(/\n/g,'<br>')}</div>
+      <div class="savings">${'★'.repeat(Math.floor(tier.stars))} ${tier.stars}</div>
+      <div class="review-count">${tier.reviews} reviews</div>
+    </div>`;
+    // Separate select button
+    html += `<button class="select-btn" onclick="event.stopPropagation();selectTierAndNext(${i})">${t('selectPackage')}</button></div>`;
+  });
+  html += '</div>';
+  // Detail card
+  const sel = data.tiers[currentTierIndex];
+  const sName = lang==='zh'?sel.nameZh:sel.nameEn;
+  const desc = t(sel.descKey);
+  const feats = lang==='zh'?sel.featuresZh:sel.featuresEn;
+  html += `<div class="card" style="margin-top:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><span class="card-tag ${sel.tag}">${sel.level} ${sName}</span>
+      <span style="font-size:12px;font-weight:700;color:var(--navy);margin-left:6px;">${t('selected')}</span></div>
+      <span style="font-size:18px;font-weight:800;color:var(--teal);">${fmtUSD(sel.usdMin)} – ${fmtUSD(sel.usdMax)}</span>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--sub);line-height:1.6;">${desc}</div>
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${feats.split('|').map(f=>`<span style="font-size:10px;padding:3px 8px;border-radius:8px;background:#E8F4F0;color:var(--teal);font-weight:600;">${f.trim()}</span>`).join('')}</div>
+  </div>
+  <button class="btn btn-primary" onclick="navigateTo('wizard')" style="margin-top:6px;">${t('continue')}</button>`;
+  document.getElementById('compare-content').innerHTML = html;
+}
+
+function selectTier(i){ currentTierIndex = i; renderCompare(); }
+function selectTierAndNext(i){ currentTierIndex = i; navigateTo('wizard'); }
+
+// ==================== WIZARD ====================
+function renderWizard(){
+  const data = packages[currentCategory];
+  const sel = data.tiers[currentTierIndex];
+  let html = '';
+  html += `<div class="wizard-steps">
+    <div class="wizard-step ${currentStep>=1?'active':''} ${currentStep>1?'done':''}"><div class="dot">${currentStep>1?'✓':'1'}</div>${t('stepFlight')}</div>
+    <div class="wizard-step ${currentStep>=2?'active':''} ${currentStep>2?'done':''}"><div class="dot">${currentStep>2?'✓':'2'}</div>${t('stepHotel')}</div>
+    <div class="wizard-step ${currentStep>=3?'active':''} ${currentStep>3?'done':''}"><div class="dot">${currentStep>3?'✓':'3'}</div>${t('stepExtras')}</div>
+  </div>`;
+
+  const medPrice = sel.priceMin;
+  const flightPrice = flights[selectedFlight].price;
+  const hotelPrice = hotels[selectedHotel].price * 3;
+  const extraPrice = (selectedExtras.transfer?500:0)+(selectedExtras.guide?800:0)+(selectedExtras.minorLang?1500:0);
+  const subtotal = medPrice + flightPrice + hotelPrice + extraPrice;
+
+  if(currentStep===1){
+    html += `<div style="font-size:13px;font-weight:700;margin-bottom:10px;">${t('step1Title')}</div>`;
+    html += `<div style="display:flex;gap:7px;margin-bottom:10px;">
+      <select class="inline-input" style="flex:1;font-size:11px;"><option>New York (JFK)</option><option>San Francisco (SFO)</option><option>Singapore (SIN)</option><option>Hong Kong (HKG)</option></select>
+      <select class="inline-input" style="flex:1;font-size:11px;"><option>Beijing (PEK)</option><option>Shanghai (PVG)</option></select>
+    </div>`;
+    flights.forEach((f,i)=>{
+      html += `<div class="flight-option ${i===selectedFlight?'selected':''}" onclick="selectedFlight=${i};renderWizard();">
+        <div><div style="font-weight:700;font-size:13px;">${f.airline} ${f.flight}</div>
+        <div style="font-size:10px;color:var(--sub);">${f.dept} → ${f.arr}</div>
+        <div style="font-size:10px;color:var(--sub);">${lang==='zh'?f.dateZh:f.dateEn} · ${f.time} · ${f.duration}</div></div>
+        <div class="dual-price"><div class="rmb">${fmtRMB(f.price)}</div><div class="usd">≈${fmtUSD(Math.round(f.price/7.15))}</div></div>
+      </div>`;
+    });
+  } else if(currentStep===2){
+    html += `<div style="font-size:13px;font-weight:700;margin-bottom:10px;">${t('step2Title')}</div>`;
+    html += `<div style="display:flex;gap:7px;margin-bottom:10px;"><input class="inline-input" style="flex:1;font-size:11px;" value="${lang==='zh'?'10月16日 – 10月19日 (3晚)':'Oct 16 – Oct 19 (3 nights)'}" readonly></div>`;
+    hotels.forEach((h,i)=>{
+      const d = lang==='zh'?h.distZh:h.distEn;
+      const tp = lang==='zh'?h.typeZh:h.typeEn;
+      const ft = lang==='zh'?h.featZh:h.featEn;
+      html += `<div class="hotel-option ${i===selectedHotel?'selected':''}" onclick="selectedHotel=${i};renderWizard();">
+        <div><div style="font-weight:700;font-size:13px;">${h.name}</div>
+        <div style="font-size:10px;color:var(--sub);">${'★'.repeat(h.stars)} · ${d} · ${tp}</div>
+        <div style="font-size:9px;color:var(--teal);">${ft}</div></div>
+        <div class="dual-price"><div class="rmb">${fmtRMB(h.price)}</div><div class="usd">≈${fmtUSD(Math.round(h.price/7.15))}</div><div style="font-size:9px;color:var(--sub);">${t('perNight')}</div></div>
+      </div>`;
+    });
+  } else if(currentStep===3){
+    html += `<div style="font-size:13px;font-weight:700;margin-bottom:10px;">${t('step3Title')}</div>`;
+    const extras = [
+      {key:'transfer',labelKey:'extraTransfer',descKey:'extraTransferDesc',price:'¥500'},
+      {key:'guide',labelKey:'extraGuide',descKey:'extraGuideDesc',price:'¥800/'+(lang==='zh'?'天':'day')},
+      {key:'minorLang',labelKey:'extraLang',descKey:'extraLangDesc',price:'¥1,500/'+(lang==='zh'?'天':'day')},
+    ];
+    extras.forEach(e=>{
+      const selBg = selectedExtras[e.key]?'border:2px solid var(--teal);background:#F0FDFA;':'';
+      html += `<div class="card" style="display:flex;justify-content:space-between;align-items:center;${selBg}" onclick="selectedExtras['${e.key}']=!selectedExtras['${e.key}'];renderWizard();">
+        <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${t(e.labelKey)}</div><div style="font-size:10px;color:var(--sub);">${t(e.descKey)}</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="font-weight:700;color:var(--teal);">${e.price}</span>
+        <div style="width:20px;height:20px;border-radius:5px;border:2px solid ${selectedExtras[e.key]?'var(--teal)':'var(--border)'};background:${selectedExtras[e.key]?'var(--teal)':'white'};display:flex;align-items:center;justify-content:center;color:white;font-size:11px;">${selectedExtras[e.key]?'✓':''}</div></div>
+      </div>`;
+    });
+  }
+
+  html += `<div style="margin-top:18px;display:flex;gap:7px;">
+    ${currentStep>1?`<button class="btn btn-outline" style="flex:1" onclick="currentStep--;renderWizard();">${t('prev')}</button>`:''}
+    ${currentStep<3?`<button class="btn btn-primary" style="flex:1" onclick="currentStep++;renderWizard();">${t('next')}</button>`:`<button class="btn btn-primary" style="flex:1" onclick="navigateTo('summary')">${t('reviewPay')}</button>`}
+  </div>`;
+  html += `<div class="card" style="margin-top:10px;background:linear-gradient(135deg,var(--navy),#1E4D7B);color:#fff;">
+    <div style="font-size:10px;opacity:.7;">${t('estTotal')}</div>
+    <div style="font-size:22px;font-weight:800;">${fmtRMB(subtotal)} <span style="font-size:13px;opacity:.7;">≈${fmtUSD(Math.round(subtotal/7.15))}</span></div>
+    <div style="font-size:10px;opacity:.7;margin-top:2px;">${t('preAuthNote')}: ${fmtRMB(Math.round(subtotal*1.2))}</div>
+  </div>`;
+  document.getElementById('wizard-content').innerHTML = html;
+}
+
+function wizardBack(){
+  if(currentStep>1){currentStep--;renderWizard();}
+  else navigateTo('compare',currentCategory);
+}
+
+// ==================== SUMMARY ====================
+function renderSummary(){
+  const data = packages[currentCategory];
+  const sel = data.tiers[currentTierIndex];
+  const medPrice = sel.priceMin;
+  const flightPrice = flights[selectedFlight].price;
+  const hotelPrice = hotels[selectedHotel].price * 3;
+  const extraPrice = (selectedExtras.transfer?500:0)+(selectedExtras.guide?800:0)+(selectedExtras.minorLang?1500:0);
+  const subtotal = medPrice + flightPrice + hotelPrice + extraPrice;
+  const sName = lang==='zh'?sel.nameZh:sel.nameEn;
+  const hName = lang==='zh'?hotels[selectedHotel].name.split(' / ')[1]:hotels[selectedHotel].name.split(' / ')[0];
+
+  let html = `<div class="section-title">${t('orderSummary')}</div><div class="section-sub">${t('reviewBeforePay')}</div>`;
+  html += `<div class="card"><div style="font-weight:800;font-size:14px;">${t(currentCategory==='physical'?'catPhysical':'catDental')} – ${sel.level} ${sName}</div></div>`;
+  html += `<div class="card"><div style="font-weight:700;font-size:13px;">✈️ ${t('flight')}</div><div style="font-size:12px;">${flights[selectedFlight].airline} ${flights[selectedFlight].flight}</div></div>`;
+  html += `<div class="card"><div style="font-weight:700;font-size:13px;">🏨 ${t('hotel')}</div><div style="font-size:12px;">${hName}</div><div style="font-size:10px;color:var(--sub);">3 ${t('nights')}</div></div>`;
+  html += `<div class="card">
+    <div class="summary-row"><span>${t('medicalPackage')}</span><span>${fmtRMB(medPrice)}</span></div>
+    <div class="summary-row"><span>${t('flight')}</span><span>${fmtRMB(flightPrice)}</span></div>
+    <div class="summary-row"><span>${t('hotel')} (3 ${t('nights')})</span><span>${fmtRMB(hotelPrice)}</span></div>
+    ${extraPrice>0?`<div class="summary-row"><span>${t('extraServices')}</span><span>${fmtRMB(extraPrice)}</span></div>`:''}
+    <div class="summary-row total"><span>${t('total')}</span><span>${fmtRMB(subtotal)} <span style="font-size:11px;color:var(--sub);font-weight:400;">≈${fmtUSD(Math.round(subtotal/7.15))}</span></span></div>
+    <div style="font-size:10px;color:var(--sub);margin-top:5px;">${t('preAuthLine',{0:fmtRMB(Math.round(subtotal*1.2))})}</div>
+  </div>`;
+  html += `<button class="btn btn-primary" onclick="placeOrder()">${t('authorizeBtn',{0:fmtRMB(Math.round(subtotal*1.2))})}</button>`;
+  html += `<div style="text-align:center;margin-top:7px;font-size:10px;color:var(--sub);">${t('secureNote')}<br><span style="color:var(--teal);">${t('securedBy')}</span></div>`;
+  document.getElementById('summary-content').innerHTML = html;
+}
+
+function placeOrder(){
+  const data = packages[currentCategory];
+  const sel = data.tiers[currentTierIndex];
+  const id = 'CR-2026-'+new Date().toISOString().slice(5,10).replace(/-/g,'')+'-'+String(orders.length+1).padStart(3,'0');
+  const medPrice = sel.priceMin;
+  const flightPrice = flights[selectedFlight].price;
+  const hotelPrice = hotels[selectedHotel].price * 3;
+  const extraPrice = (selectedExtras.transfer?500:0)+(selectedExtras.guide?800:0)+(selectedExtras.minorLang?1500:0);
+  const subtotal = medPrice + flightPrice + hotelPrice + extraPrice;
+  const sName = lang==='zh'?sel.nameZh:sel.nameEn;
+  orders.unshift({
+    id,date:new Date().toISOString().slice(0,10),type:currentCategory,tierIndex:currentTierIndex,
+    hospitalEn:currentCategory==='physical'?'Peking Union Medical College Hospital':'Shanghai Ninth People\'s Hospital',
+    hospitalZh:currentCategory==='physical'?'北京协和医院':'上海第九人民医院',
+    total:'¥'+subtotal.toLocaleString(),status:'confirmed',
+    stages:[
+      {labelEn:'Package Selected',labelZh:'套餐已选',timeEn:'Just now',timeZh:'刚刚',done:true},
+      {labelEn:'Flight & Hotel Booked',labelZh:'机酒已订',timeEn:'Just now',timeZh:'刚刚',done:true},
+      {labelEn:'Pre-Auth Confirmed',labelZh:'预授权已确认',timeEn:'Just now',timeZh:'刚刚',done:true,descEn:`VISA ****${String(Math.floor(Math.random()*9000)+1000)}, ¥${Math.round(subtotal*1.2).toLocaleString()} frozen`,descZh:`VISA ****${String(Math.floor(Math.random()*9000)+1000)}, ¥${Math.round(subtotal*1.2).toLocaleString()} 已冻结`},
+      {labelEn:'Service Day',labelZh:'就诊日',timeEn:'Upcoming',timeZh:'待定',done:false,status:'pending'},
+    ],reviewed:false
+  });
+  showToast(t('orderPlaced'));
+  setTimeout(()=>navigateTo('orders'),1500);
+}
+
+// ==================== ORDERS ====================
+function renderOrders(){
+  let html = `<div class="section-title">${t('myOrders')}</div>`;
+  if(orders.length===0){
+    html += `<div class="card" style="text-align:center;padding:36px;"><div style="font-size:40px;">📋</div><div style="font-size:13px;color:var(--sub);margin-top:7px;">${t('noOrders')}</div></div>`;
+  } else {
+    orders.forEach(o=>{
+      const hName = lang==='zh'?o.hospitalZh:o.hospitalEn;
+      const sc = o.status==='completed'?'var(--green)':o.status==='in_progress'?'var(--gold)':'var(--teal)';
+      const st = o.status==='completed'?t('completed'):o.status==='in_progress'?t('inProgress'):t('confirmed');
+      const pkgLabel = (o.type==='physical'?t('catPhysical'):t('catDental'))+' – '+packages[o.type].tiers[o.tierIndex].level+' '+(lang==='zh'?packages[o.type].tiers[o.tierIndex].nameZh:packages[o.type].tiers[o.tierIndex].nameEn);
+      html += `<div class="card" onclick="showOrderDetail('${o.id}')" style="cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <div><div style="font-weight:700;font-size:13px;">${pkgLabel}</div>
+          <div style="font-size:10px;color:var(--sub);">${hName}</div>
+          <div style="font-size:9px;color:var(--sub);">${o.id}</div></div>
+          <div style="text-align:right;"><div style="font-weight:800;color:var(--navy);">${o.total}</div>
+          <div style="font-size:10px;color:${sc};font-weight:600;">● ${st}</div></div>
+        </div>
+        ${o.reviewed?`<div style="font-size:10px;color:var(--star);margin-top:5px;">★★★★★ ${t('reviewed')}</div>`:(o.status==='completed'?`<div style="font-size:10px;color:var(--teal);margin-top:5px;">✏️ ${t('leaveReview')}</div>`:'')}
+      </div>`;
+    });
+  }
+  document.getElementById('orders-content').innerHTML = html;
+}
+
+function showOrderDetail(orderId){
+  currentOrderId = orderId;
+  const o = orders.find(x=>x.id===orderId);
+  if(!o) return;
+  const hName = lang==='zh'?o.hospitalZh:o.hospitalEn;
+  const pkgLabel = (o.type==='physical'?t('catPhysical'):t('catDental'))+' – '+packages[o.type].tiers[o.tierIndex].level+' '+(lang==='zh'?packages[o.type].tiers[o.tierIndex].nameZh:packages[o.type].tiers[o.tierIndex].nameEn);
+  const st = o.status==='completed'?t('completed'):o.status==='in_progress'?t('inProgress'):t('confirmed');
+  let html = `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-weight:800;font-size:15px;">${pkgLabel}</div>
+    <span class="badge">${st}</span></div>
+    <div style="font-size:11px;color:var(--sub);margin-top:3px;">${hName}</div>
+    <div style="font-size:10px;color:var(--sub);">ID: ${o.id}</div>
+    <div style="font-weight:800;font-size:20px;color:var(--navy);margin-top:6px;">${o.total}</div>
+  </div>
+  <div style="font-size:15px;font-weight:800;margin-bottom:8px;">${t('timeline')}</div><div class="timeline">`;
+  o.stages.forEach(s=>{
+    const cls = s.done?'':'pending';
+    const label = lang==='zh'?s.labelZh:s.labelEn;
+    const time = lang==='zh'?s.timeZh:s.timeEn;
+    const desc = lang==='zh'?(s.descZh||''):(s.descEn||'');
+    html += `<div class="timeline-item">
+      <div class="timeline-dot ${cls}">${s.done?'✓':'○'}</div>
+      <div class="timeline-content"><div class="tl-title">${label}</div><div class="tl-time">${time}</div>${desc?`<div class="tl-desc">${desc}</div>`:''}</div>
+    </div>`;
+  });
+  html += '</div>';
+  if(o.status==='completed'&&!o.reviewed) html += `<button class="btn btn-gold" onclick="showReview('${o.id}')" style="margin-top:14px;">⭐ ${t('writeReview')}</button>`;
+  if(o.status==='completed'&&o.reviewed) html += `<div class="card" style="text-align:center;color:var(--star);font-size:18px;">★★★★★<br><span style="font-size:11px;color:var(--sub);">${t('reviewed')}</span></div>`;
+  document.getElementById('order-detail-content').innerHTML = html;
+  navigateTo('order-detail');
+}
+
+// ==================== REVIEW ====================
+function showReview(orderId){
+  currentOrderId = orderId;
+  const o = orders.find(x=>x.id===orderId);
+  const pkgLabel = (o.type==='physical'?t('catPhysical'):t('catDental'))+' – '+packages[o.type].tiers[o.tierIndex].level+' '+(lang==='zh'?packages[o.type].tiers[o.tierIndex].nameZh:packages[o.type].tiers[o.tierIndex].nameEn);
+  let html = `<div class="section-title">${t('writeReview')}</div><div class="section-sub">${pkgLabel}</div>`;
+  html += `<div class="card"><div style="font-weight:700;font-size:13px;margin-bottom:6px;">${t('overallRating')}</div><div class="star-rating" id="stars-overall">${[1,2,3,4,5].map(i=>`<span class="star" onclick="setStars('overall',${i})">★</span>`).join('')}</div></div>`;
+  const dims = [{key:'attitude',labelKey:'staffAttitude'},{key:'english',labelKey:'englishComm'},{key:'wait',labelKey:'waitTime'},{key:'report',labelKey:'reportQuality'}];
+  dims.forEach(d=>{
+    html += `<div class="card"><div style="font-weight:700;font-size:13px;margin-bottom:6px;">${t(d.labelKey)}</div><div class="star-rating" id="stars-${d.key}">${[1,2,3,4,5].map(i=>`<span class="star" onclick="setStars('${d.key}',${i})">★</span>`).join('')}</div></div>`;
+  });
+  html += `<button class="btn btn-primary" onclick="submitReview('${orderId}')" style="margin-top:10px;">${t('submitReview')}</button>`;
+  document.getElementById('review-content').innerHTML = html;
+  navigateTo('review');
+}
+
+window.reviewScores = {};
+function setStars(dim,val){
+  window.reviewScores[dim]=val;
+  const c=document.getElementById('stars-'+dim);
+  if(c) c.querySelectorAll('.star').forEach((s,i)=>{s.classList.toggle('active',i<val);});
+}
+function submitReview(orderId){
+  const o=orders.find(x=>x.id===orderId);
+  if(o) o.reviewed=true;
+  showToast(t('reviewDone'));
+  setTimeout(()=>showOrderDetail(orderId),1000);
+}
+
+// ==================== TOAST ====================
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+// ==================== INIT ====================
+lang = detectLang();
+setLang(lang);
+navigateTo('home');
+</script>
+
+</body>
+</html>
